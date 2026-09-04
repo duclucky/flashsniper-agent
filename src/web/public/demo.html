@@ -224,16 +224,54 @@
 
     canvas {
       width: 100%;
-      height: 300px;
+      height: 230px;
       background: #070a0e;
       border-radius: 4px;
       display: block;
     }
 
-    .meter-container { margin-top: 12px; }
+    .meter-container { margin-top: 10px; }
     .meter-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
     .meter-bar { height: 6px; background: #232a34; border-radius: 3px; overflow: hidden; }
     .meter-fill { height: 100%; transition: width 0.3s ease; }
+
+    /* Candle Telemetry Panel */
+    .telemetry-panel {
+      background: #090d12;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-top: 10px;
+    }
+    .telemetry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #161c24;
+      padding-bottom: 6px;
+    }
+    .phase-badge {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .phase-NORMAL { background: #232a34; color: var(--text-muted); }
+    .phase-CASCADE { background: rgba(246, 70, 93, 0.2); color: var(--red); border: 1px solid var(--red); }
+    .phase-ABSORB { background: rgba(240, 185, 11, 0.2); color: var(--yellow); border: 1px solid var(--yellow); }
+    .phase-REBOUND { background: rgba(14, 203, 129, 0.2); color: var(--green); border: 1px solid var(--green); }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 16px;
+    }
+    .telemetry-item { display: flex; flex-direction: column; }
+    .telemetry-lbl { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+    .telemetry-val { font-size: 11px; color: #fff; font-family: 'JetBrains Mono', monospace; }
 
     /* Side Panel */
     .terminal-box {
@@ -401,13 +439,13 @@
               <div class="legend-item"><div class="legend-box" style="background: var(--red); border: 1px dashed #fff;"></div> Hard Stop-Loss (-0.8%)</div>
             </div>
           </div>
-          <canvas id="candleCanvas" width="820" height="300"></canvas>
+          <canvas id="candleCanvas" width="820" height="230"></canvas>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
           <div class="meter-container">
             <div class="meter-label">
-              <span>Liquidation Velocity ($V_{liq}$)</span>
+              <span>Liquidation Velocity (V-Liq Rate)</span>
               <span id="liqVelocityLabel">0 $/sec</span>
             </div>
             <div class="meter-bar">
@@ -422,6 +460,36 @@
             </div>
             <div class="meter-bar">
               <div id="oibFill" class="meter-fill" style="width: 50%; background: #3b82f6;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Candle Telemetry Inspector -->
+        <div class="telemetry-panel" id="telemetryPanel">
+          <div class="telemetry-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11px; font-weight: 700; color: #fff;">🕯️ Real-Time Candle Telemetry & L2 Microstructure Inspector</span>
+              <span class="phase-badge phase-NORMAL" id="telPhaseBadge">NORMAL RANGE</span>
+            </div>
+            <span style="font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;" id="telBarTime">BAR #1 • READY</span>
+          </div>
+
+          <div class="telemetry-grid">
+            <div class="telemetry-item">
+              <div class="telemetry-lbl">Candle OHLC (1m)</div>
+              <div class="telemetry-val" id="telOHLC">O: $136.60 | H: $136.80 | L: $136.40 | C: $136.50</div>
+            </div>
+            <div class="telemetry-item">
+              <div class="telemetry-lbl">Bar Range / Spread</div>
+              <div class="telemetry-val" id="telRange">-$0.10 (-0.07%) • 0.40 USDT Spread</div>
+            </div>
+            <div class="telemetry-item">
+              <div class="telemetry-lbl">Forced Liquidations on Bar</div>
+              <div class="telemetry-val" id="telLiq" style="color: var(--red);">$16,000 USDT (Low Vol)</div>
+            </div>
+            <div class="telemetry-item">
+              <div class="telemetry-lbl">L2 Absorption Sentiment</div>
+              <div class="telemetry-val" id="telAbsorb">Balanced (+0.01 OIB) • L2 Bids Steady</div>
             </div>
           </div>
         </div>
@@ -758,6 +826,49 @@
     const analyticsView = document.getElementById('analyticsView');
     const ledgerTableBody = document.getElementById('ledgerTableBody');
 
+    const telPhaseBadge = document.getElementById('telPhaseBadge');
+    const telBarTime = document.getElementById('telBarTime');
+    const telOHLC = document.getElementById('telOHLC');
+    const telRange = document.getElementById('telRange');
+    const telLiq = document.getElementById('telLiq');
+    const telAbsorb = document.getElementById('telAbsorb');
+
+    function updateTelemetry(c, f, i, total, s) {
+      if (!c) return;
+      telBarTime.innerText = `BAR #${i + 1} OF ${total} • 14:22:${(10 + i * 4).toString().padStart(2, '0')}`;
+      telOHLC.innerText = `O: $${c.o.toFixed(s.decimals)} | H: $${c.h.toFixed(s.decimals)} | L: $${c.l.toFixed(s.decimals)} | C: $${c.c.toFixed(s.decimals)}`;
+
+      const diff = c.c - c.o;
+      const pct = (diff / c.o) * 100;
+      const spread = (c.h - c.l).toFixed(s.decimals);
+      telRange.innerText = `${diff >= 0 ? '+' : ''}$${diff.toFixed(s.decimals)} (${diff >= 0 ? '+' : ''}${pct.toFixed(2)}%) • ${spread} Spread`;
+
+      const liqAmount = f ? f.liq : 16000;
+      telLiq.innerText = `$${liqAmount.toLocaleString()} USDT ${liqAmount > 1000000 ? '💥 (CRITICAL CLIMAX)' : (liqAmount > 500000 ? '⚠️ (HIGH DISLOCATION)' : '(Normal)')}`;
+
+      const oibVal = f ? f.oib : 0.01;
+      const oibText = oibVal >= 0.25 ? `BULLISH ABSORPTION (+${oibVal.toFixed(2)}) • Bids Thicken ✅` : (oibVal < -0.4 ? `HEAVY SELLER PRESSURE (${oibVal.toFixed(2)}) • Knife Falling ❌` : `Neutral / Balanced (${oibVal.toFixed(2)})`);
+      telAbsorb.innerText = oibText;
+
+      // Update Phase Badge
+      if (i === s.entryStepIndex) {
+        telPhaseBadge.className = 'phase-badge phase-REBOUND';
+        telPhaseBadge.innerText = '🎯 SNIPER ARMED & FILLED';
+      } else if (i >= s.entryStepIndex) {
+        telPhaseBadge.className = 'phase-badge phase-REBOUND';
+        telPhaseBadge.innerText = 'MEAN REVERSION REBOUND';
+      } else if (i >= s.liqStepIndex - 1) {
+        telPhaseBadge.className = 'phase-badge phase-ABSORB';
+        telPhaseBadge.innerText = 'ABSORPTION CLIMAX';
+      } else if (f && f.liq > 300000) {
+        telPhaseBadge.className = 'phase-badge phase-CASCADE';
+        telPhaseBadge.innerText = 'CASCADE LIQUIDATION DROP';
+      } else {
+        telPhaseBadge.className = 'phase-badge phase-NORMAL';
+        telPhaseBadge.innerText = 'NORMAL RANGE SCAN';
+      }
+    }
+
     function logLine(time, msg, cls = '') {
       const div = document.createElement('div');
       div.className = 'terminal-line ' + cls;
@@ -795,6 +906,7 @@
       cortexBox.style.display = 'none';
       renderHeatmap();
       drawCandleChart(0);
+      updateTelemetry(activeScenario.candles[0], activeScenario.frames[0], 0, activeScenario.candles.length, activeScenario);
       logLine(new Date().toISOString().substring(11, 19), `Switched target asset to ${symbol}. Ready for scenario simulation.`, '');
     };
 
@@ -1101,6 +1213,8 @@
         oibLabel.innerText = (f.oib > 0 ? '+' : '') + f.oib.toFixed(2);
 
         drawCandleChart(i);
+        const candleIndex = Math.min(s.candles.length - 1, i);
+        updateTelemetry(s.candles[candleIndex], f, i, s.candles.length, s);
 
         let cls = '';
         if (f.state === 'ALERT') cls = 'log-alert';
@@ -1143,6 +1257,7 @@
     renderHeatmap();
     renderLedger();
     drawCandleChart(0);
+    updateTelemetry(activeScenario.candles[0], activeScenario.frames[0], 0, activeScenario.candles.length, activeScenario);
   </script>
 </body>
 </html>
