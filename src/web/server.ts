@@ -221,8 +221,14 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
-        const apiKey = payload.apiKey || 'demo_testnet_key_binance';
-        const apiSecret = payload.apiSecret || 'demo_testnet_secret_binance';
+        const apiKey = payload.apiKey ? String(payload.apiKey).trim() : '';
+        const apiSecret = payload.apiSecret ? String(payload.apiSecret).trim() : '';
+
+        if (!apiKey || !apiSecret) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Both Binance Demo API Key and Secret Key are required.' }));
+          return;
+        }
 
         liveOrderExecutor.setCredentials(apiKey, apiSecret, true);
         const balRes = await liveOrderExecutor.getFuturesBalance();
@@ -384,14 +390,18 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Static File Serving
-  let filePath = path.join(publicDir, url.pathname === '/' ? 'index.html' : url.pathname);
+  // On local, opening "/" opens live.html directly (The Trading Terminal for real user).
+  let filePath = path.join(publicDir, url.pathname === '/' ? 'live.html' : url.pathname);
   if (url.pathname === '/demo' || url.pathname === '/demo.html') {
     filePath = path.join(publicDir, 'demo.html');
   }
   if (url.pathname === '/live' || url.pathname === '/live.html') {
     filePath = path.join(publicDir, 'live.html');
   }
-  if (!fs.existsSync(filePath)) filePath = path.join(publicDir, 'index.html');
+  if (url.pathname === '/pitch' || url.pathname === '/overview') {
+    filePath = path.join(publicDir, 'index.html');
+  }
+  if (!fs.existsSync(filePath)) filePath = path.join(publicDir, 'live.html');
 
   const ext = path.extname(filePath);
   let contentType = 'text/html';

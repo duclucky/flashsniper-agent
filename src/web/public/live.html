@@ -275,9 +275,8 @@
   <div class="container">
     <header>
       <div class="logo-area">
-        <a href="/" class="back-link">← Overview & Video</a>
+        <button id="guideBtn" class="back-link">📖 User Guide & Manual</button>
         <h1 style="font-size: 18px; font-weight: 700; margin-left: 6px;">🎯 FlashSniper Pro — Trading Terminal</h1>
-        <span class="badge">Binance Agent OS • Track A</span>
         <span class="badge-demo" id="envBadge">🟡 Binance Demo Trading</span>
       </div>
       <div class="env-nav">
@@ -285,6 +284,29 @@
         <button id="envOAuthTab" class="env-tab">🟢 Binance Agent OS (OAuth Live)</button>
       </div>
     </header>
+
+    <!-- User Guide Modal -->
+    <div id="guideModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 999; justify-content: center; align-items: center;">
+      <div style="background: #12161c; border: 1px solid var(--border); border-radius: 10px; max-width: 620px; width: 90%; padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: #fff;">📖 FlashSniper Pro — Operational Guide</h3>
+          <button id="closeGuideBtn" style="background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✕</button>
+        </div>
+        <div style="font-size: 13px; line-height: 1.6; color: var(--text-muted);">
+          <p style="margin-bottom: 12px;"><strong style="color: var(--yellow);">Method 1: Risk-Free Binance Demo Trading ($15,000 USDT Testnet Funds):</strong><br>
+          1. Log in to <a href="https://demo.binance.com/en/my/settings/api-management" target="_blank" style="color: var(--yellow); text-decoration: underline;">demo.binance.com</a> to create free Demo API Key / Secret Key credentials.<br>
+          2. Paste your keys into the inputs below and click <strong>Connect Demo Account</strong>.<br>
+          3. Select your target pair (SOL, BTC, ETH) and click <strong>Start Live Sniper Agent</strong> to snipe dislocation wicks automatically!</p>
+
+          <p style="margin-bottom: 12px;"><strong style="color: var(--green);">Method 2: Live Trading via Binance Agent OS (Sub-Account):</strong><br>
+          1. Switch to the <strong>🟢 Binance Agent OS (OAuth Live)</strong> tab.<br>
+          2. Click <strong>Connect Binance Agent</strong> to authorize official OAuth session (Zero-Withdrawal permissions).<br>
+          3. Configure your 2% capital allocation limit and activate the live agent.</p>
+
+          <p><strong style="color: var(--red);">Emergency Halt:</strong> Click the red <strong>EMERGENCY HALT</strong> button at any time to instantly kill all sockets and reset state.</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Binance Demo Trading Configuration Card -->
     <div class="connection-box" id="demoConnBox">
@@ -298,10 +320,9 @@
         </a>
       </div>
       <div class="conn-inputs" id="demoInputRow">
-        <input type="text" id="demoApiKey" class="input-field" placeholder="Binance Demo API Key" />
-        <input type="password" id="demoSecretKey" class="input-field" placeholder="Binance Demo Secret Key" />
+        <input type="text" id="demoApiKey" class="input-field" placeholder="Enter Binance Demo API Key" />
+        <input type="password" id="demoSecretKey" class="input-field" placeholder="Enter Binance Demo Secret Key" />
         <button id="connectDemoBtn" class="btn btn-yellow">🔗 Connect Demo Account</button>
-        <button id="quickFillDemoBtn" class="btn btn-ghost" title="Auto-fill with official Binance Testnet Mock credentials">⚡ Quick Test Keys</button>
       </div>
       <div id="demoConnectedRow" style="display: none; justify-content: space-between; align-items: center; margin-top: 6px;">
         <span style="font-size: 12px; color: var(--green);" id="demoConnectedInfo">● Connected to demo.binance.com • Real Testnet Sockets Active</span>
@@ -513,17 +534,24 @@
       balanceVal.innerText = '$10,000.00';
     });
 
-    // Quick Fill Demo Credentials
-    quickFillDemoBtn.addEventListener('click', () => {
-      demoApiKey.value = 'demo_testnet_key_binance_hft_' + Math.random().toString(36).substring(2, 7);
-      demoSecretKey.value = 'demo_secret_key_binance_testnet_89a2bc1';
-      connectDemoBtn.click();
-    });
+    // Guide Modal
+    const guideBtn = document.getElementById('guideBtn');
+    const closeGuideBtn = document.getElementById('closeGuideBtn');
+    const guideModal = document.getElementById('guideModal');
+
+    guideBtn.addEventListener('click', () => { guideModal.style.display = 'flex'; });
+    closeGuideBtn.addEventListener('click', () => { guideModal.style.display = 'none'; });
+    guideModal.addEventListener('click', (e) => { if (e.target === guideModal) guideModal.style.display = 'none'; });
 
     // Connect Demo Trading
     connectDemoBtn.addEventListener('click', async () => {
-      const key = demoApiKey.value.trim() || 'demo_testnet_key_binance';
-      const secret = demoSecretKey.value.trim() || 'demo_testnet_secret_binance';
+      const key = demoApiKey.value.trim();
+      const secret = demoSecretKey.value.trim();
+
+      if (!key || !secret) {
+        alert('Please enter both Binance Demo API Key and Secret Key from demo.binance.com!');
+        return;
+      }
 
       const res = await fetch('/api/demo-trading/connect', {
         method: 'POST',
@@ -538,6 +566,8 @@
         balanceVal.innerText = `$${data.session.balance.toFixed(2)}`;
         logLine(new Date().toISOString().substring(11, 19), `Connected to demo.binance.com with $${data.session.balance.toFixed(2)} test funds!`, 'log-armed');
         startLiveMonitoring();
+      } else {
+        alert('Connection failed: ' + (data.error || 'Please verify your Demo API Key and Secret Key.'));
       }
     });
 
@@ -690,9 +720,6 @@
       symbolVal.innerText = pairSelect.value;
       if (livePollInterval) startLiveMonitoring();
     });
-
-    // Auto-connect demo on load for instant user satisfaction
-    quickFillDemoBtn.click();
   </script>
 </body>
 </html>
