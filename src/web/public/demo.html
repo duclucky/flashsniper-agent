@@ -50,7 +50,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 6px 12px;
+      padding: 5px 10px;
       border: 1px solid rgba(240, 185, 11, 0.3);
       border-radius: 4px;
       background: rgba(240, 185, 11, 0.05);
@@ -184,7 +184,7 @@
     }
 
     .card-value {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
     }
@@ -211,7 +211,7 @@
 
     /* Canvas Chart */
     .chart-container {
-      background: #0d1117;
+      background: #090d12;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px;
@@ -224,8 +224,8 @@
 
     canvas {
       width: 100%;
-      height: 280px;
-      background: #090d12;
+      height: 300px;
+      background: #070a0e;
       border-radius: 4px;
       display: block;
     }
@@ -241,7 +241,7 @@
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 12px;
-      height: 240px;
+      height: 250px;
       overflow-y: auto;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -336,19 +336,17 @@
     </header>
 
     <!-- Multi-Asset Heatmap Bar -->
-    <div class="heatmap-bar" id="heatmapGrid">
-      <!-- Populated via JS -->
-    </div>
+    <div class="heatmap-bar" id="heatmapGrid"></div>
 
     <!-- Control Bar -->
     <div class="control-bar">
       <div class="control-group">
         <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">SIMULATED PAIR:</span>
         <select id="pairSelect">
-          <option value="SOLUSDT">SOL / USDT (Recorded Flash Crash)</option>
-          <option value="BTCUSDT">BTC / USDT (Cascade Scenario)</option>
-          <option value="ETHUSDT">ETH / USDT (Cascade Scenario)</option>
-          <option value="DOGEUSDT">DOGE / USDT (Extreme Volatility)</option>
+          <option value="SOLUSDT">SOL / USDT (V-Bottom Needle Wick)</option>
+          <option value="BTCUSDT">BTC / USDT (Institutional Double-Bottom Sweep)</option>
+          <option value="ETHUSDT">ETH / USDT (Morning-Star DeFi Liquidation)</option>
+          <option value="DOGEUSDT">DOGE / USDT (Extreme Meme Elevator Dump)</option>
         </select>
         <span style="font-size: 11px; color: var(--yellow);">⚡ Zero-Credential Judge Mode: 100% Deterministic Replay</span>
       </div>
@@ -398,11 +396,12 @@
             <div class="chart-legend">
               <div class="legend-item"><div class="legend-box" style="background: var(--green);"></div> Buy/Rebound</div>
               <div class="legend-item"><div class="legend-box" style="background: var(--red);"></div> Liquidation Wick</div>
+              <div class="legend-item"><div class="legend-box" style="background: #f0b90b; height: 2px;"></div> EMA 20</div>
               <div class="legend-item"><div class="legend-box" style="background: var(--yellow);"></div> Take Profit (+2.4%)</div>
               <div class="legend-item"><div class="legend-box" style="background: var(--red); border: 1px dashed #fff;"></div> Hard Stop-Loss (-0.8%)</div>
             </div>
           </div>
-          <canvas id="candleCanvas" width="800" height="280"></canvas>
+          <canvas id="candleCanvas" width="820" height="300"></canvas>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
@@ -504,40 +503,22 @@
   </div>
 
   <script>
-    // Embedded client-side deterministic dataset for pure Vercel static serving
-    const matrixData = [
-      { symbol: 'SOLUSDT', name: 'Solana', price: 135.00, change24h: -4.2, liq10s: 1380000, oib: 0.73, status: 'ARMED' },
-      { symbol: 'BTCUSDT', name: 'Bitcoin', price: 92450.00, change24h: +0.8, liq10s: 45000, oib: 0.05, status: 'NORMAL' },
-      { symbol: 'ETHUSDT', name: 'Ethereum', price: 3420.50, change24h: -1.6, liq10s: 140000, oib: -0.12, status: 'WATCH' },
-      { symbol: 'BNBUSDT', name: 'BNB Chain', price: 640.20, change24h: +1.1, liq10s: 25000, oib: 0.08, status: 'NORMAL' },
-      { symbol: 'DOGEUSDT', name: 'Dogecoin', price: 0.2150, change24h: -8.4, liq10s: 620000, oib: -0.65, status: 'ALERT' },
-      { symbol: 'PEPEUSDT', name: 'Pepe', price: 0.0000182, change24h: -3.5, liq10s: 85000, oib: 0.04, status: 'NORMAL' }
-    ];
-
-    const ledgerData = [
-      { id: 'SNIP_048', time: '14:22:10', symbol: 'SOLUSDT', side: 'BUY', type: 'ICEBERG', entry: 131.35, exit: 134.50, pnlUsd: +5.56, pnlPct: +2.78, duration: '45s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: 'cd85284218f8b2102c2616fcdcf6ccc3c7b553e6b6de115a1eddf7db65bc8307' },
-      { id: 'SNIP_047', time: '13:05:42', symbol: 'DOGEUSDT', side: 'BUY', type: 'ICEBERG', entry: 0.2080, exit: 0.2135, pnlUsd: +4.20, pnlPct: +2.64, duration: '38s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: 'a4b8921dfc630129a8be17cf4982619cd8fe210a471b6201bba87c293012a9bc' },
-      { id: 'SNIP_046', time: '11:40:15', symbol: 'ETHUSDT', side: 'BUY', type: 'ICEBERG', entry: 3380.00, exit: 3352.96, pnlUsd: -1.60, pnlPct: -0.80, duration: '22s', x402Cost: 0.0005, status: 'STOP_LOSS', proof: '98f7123ca8710bba120937cd6281736bba1723c09f8261ab72810938bca8710a' },
-      { id: 'SNIP_045', time: '09:15:30', symbol: 'SOLUSDT', side: 'BUY', type: 'ICEBERG', entry: 129.50, exit: 132.80, pnlUsd: +6.10, pnlPct: +2.55, duration: '50s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: '1e2c9f6bb15e3a50c1d47fa26fa9891dc0900fd8b5ccbc70e0c24302ad95b02c' },
-      { id: 'SNIP_044', time: '07:50:18', symbol: 'BTCUSDT', side: 'BUY', type: 'ICEBERG', entry: 91200.00, exit: 93400.00, pnlUsd: +8.80, pnlPct: +2.41, duration: '64s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: '7b6a1902cba8712390fca71823901bca871092837bc90182371902837bc90182' },
-      { id: 'SNIP_043', time: '05:12:00', symbol: 'SOLUSDT', side: 'BUY', type: 'ICEBERG', entry: 127.80, exit: 130.90, pnlUsd: +5.85, pnlPct: +2.43, duration: '41s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: '3c8910283bca918237bc9018273901bca871092837bc90182371902837bc9018' }
-    ];
-
-    const equityPoints = [
-      10000, 10055, 10112, 10078, 10145, 10210, 10290, 10355, 10320, 10410,
-      10530, 10620, 10700, 10650, 10780, 10890, 10970, 11050, 11180, 11290,
-      11240, 11360, 11490, 11600, 11720, 11850, 11810, 11950, 12080, 12190,
-      12320, 12450, 12400, 12560, 12690, 12810, 12940, 13080, 13190, 13150,
-      13290, 13462.40
-    ];
-
-    // Financial State of the Agent
     let subAccountCapital = 10000.00;
     let realizedSessionPnl = 0.00;
     let completedTradesCount = 0;
 
-    // Distinct Realistic Scenarios for each Symbol
+    const matrixData = [
+      { symbol: 'SOLUSDT', name: 'Solana', price: 135.00, change24h: -4.2, liq10s: 1380000, oib: 0.73, status: 'ARMED' },
+      { symbol: 'BTCUSDT', name: 'Bitcoin', price: 92450.00, change24h: +0.8, liq10s: 4800000, oib: 0.81, status: 'ARMED' },
+      { symbol: 'ETHUSDT', name: 'Ethereum', price: 3420.50, change24h: -1.6, liq10s: 2400000, oib: 0.76, status: 'ARMED' },
+      { symbol: 'BNBUSDT', name: 'BNB Chain', price: 640.20, change24h: +1.1, liq10s: 25000, oib: 0.08, status: 'NORMAL' },
+      { symbol: 'DOGEUSDT', name: 'Dogecoin', price: 0.2150, change24h: -8.4, liq10s: 820000, oib: 0.82, status: 'ARMED' },
+      { symbol: 'PEPEUSDT', name: 'Pepe', price: 0.0000182, change24h: -3.5, liq10s: 85000, oib: 0.04, status: 'NORMAL' }
+    ];
+
+    // FOUR COMPLETELY DISTINCT, AUTHENTIC MARKET SCENARIOS
     const pairScenarios = {
+      // 1. SOL: Classic Rapid V-Bottom Needle Wick (16 Candles)
       SOLUSDT: {
         symbol: 'SOLUSDT',
         name: 'Solana',
@@ -551,35 +532,43 @@
         pnlUsd: 5.56,
         roiPct: 2.78,
         proof: 'cd85284218f8b2102c2616fcdcf6ccc3c7b553e6b6de115a1eddf7db65bc8307',
+        liqStepIndex: 9,  // Liquidation happens at candle index 9
+        entryStepIndex: 10, // Entry at candle 10
         frames: [
           { p: 136.50, liq: 16000, oib: 0.01, state: 'STANDBY', reason: 'SOLUSDT book balanced. Normal maker activity.' },
           { p: 136.40, liq: 33000, oib: 0.01, state: 'STANDBY', reason: 'Minor retail flow. Spread 0.01 USDT.' },
           { p: 136.30, liq: 49000, oib: 0.01, state: 'STANDBY', reason: 'Scanning L2 bids down to $135.0.' },
-          { p: 135.20, liq: 313000, oib: -0.71, state: 'STANDBY', reason: 'Volume picking up. Scanning bids.' },
-          { p: 133.80, liq: 746000, oib: -0.71, state: 'ALERT', reason: 'Liquidation cascade detected: $746k in 10s. Watching for absorption.' },
-          { p: 132.00, liq: 1350000, oib: -0.71, state: 'ALERT', reason: 'Heavy liquidation ongoing ($1,350k). Knife falling, holding off.' },
-          { p: 130.80, liq: 1380000, oib: -0.71, state: 'ALERT', reason: 'Liquidation peak ($1,380k). Orderbook not yet absorbing.' },
-          { p: 130.90, liq: 948000, oib: +0.73, state: 'ALERT', reason: 'Selling decelerating. Bids thickening.' },
+          { p: 135.80, liq: 120000, oib: -0.25, state: 'STANDBY', reason: 'Mild dip, bids absorbing normally.' },
+          { p: 135.20, liq: 313000, oib: -0.55, state: 'STANDBY', reason: 'Volume picking up. Scanning bids.' },
+          { p: 134.10, liq: 550000, oib: -0.68, state: 'ALERT', reason: 'Liquidation cascade detected: $550k in 10s.' },
+          { p: 133.00, liq: 920000, oib: -0.74, state: 'ALERT', reason: 'Cascade accelerating. Knife falling.' },
+          { p: 132.00, liq: 1350000, oib: -0.80, state: 'ALERT', reason: 'Peak liquidation wave ($1.35M). Orderbook pierced.' },
+          { p: 130.80, liq: 1380000, oib: -0.65, state: 'ALERT', reason: 'Wick bottom at $130.80. Selling decelerating.' },
           { p: 131.35, liq: 333000, oib: +0.73, state: 'ARMED', reason: 'Absorption confirmed (OIB: +0.73). Sniper entry armed.' },
-          { p: 133.20, liq: 23000, oib: +0.11, state: 'TRIGGERED', reason: 'Iceberg limit buy order executed with Hard Stop-Loss.' },
-          { p: 134.50, liq: 5000, oib: +0.11, state: 'STANDBY', reason: 'Mean reversion completed. Take-Profit hit at $134.50.' },
-          { p: 135.00, liq: 0, oib: +0.11, state: 'STANDBY', reason: 'Cycle finished. +$5.56 USDT profit. Standby mode.' }
+          { p: 132.40, liq: 95000, oib: +0.45, state: 'TRIGGERED', reason: 'Iceberg buy placed at $131.35. Hard SL at $129.65.' },
+          { p: 133.50, liq: 25000, oib: +0.30, state: 'STANDBY', reason: 'Strong V-rebound underway.' },
+          { p: 134.50, liq: 5000, oib: +0.15, state: 'STANDBY', reason: 'Take-Profit executed at $134.50! (+2.78% ROI).' },
+          { p: 135.20, liq: 0, oib: +0.05, state: 'STANDBY', reason: 'Rebound target reached. Returning to scan mode.' }
         ],
         candles: [
           { o: 136.6, h: 136.8, l: 136.4, c: 136.5 },
           { o: 136.5, h: 136.7, l: 136.3, c: 136.4 },
           { o: 136.4, h: 136.6, l: 136.2, c: 136.3 },
-          { o: 136.3, h: 136.4, l: 136.0, c: 136.2 },
-          { o: 136.2, h: 136.2, l: 134.8, c: 135.2 },
-          { o: 135.2, h: 135.3, l: 133.0, c: 133.8 },
-          { o: 133.8, h: 134.0, l: 131.5, c: 132.0 },
-          { o: 132.0, h: 132.2, l: 130.8, c: 130.9 },
-          { o: 130.9, h: 131.6, l: 130.8, c: 131.4 },
-          { o: 131.4, h: 133.4, l: 131.3, c: 133.2 },
-          { o: 133.2, h: 134.8, l: 133.0, c: 134.5 },
-          { o: 134.5, h: 135.2, l: 134.4, c: 135.0 }
+          { o: 136.3, h: 136.5, l: 135.6, c: 135.8 },
+          { o: 135.8, h: 136.0, l: 135.0, c: 135.2 },
+          { o: 135.2, h: 135.4, l: 133.8, c: 134.1 },
+          { o: 134.1, h: 134.2, l: 132.6, c: 133.0 },
+          { o: 133.0, h: 133.2, l: 131.5, c: 132.0 },
+          { o: 132.0, h: 132.2, l: 130.8, c: 130.9 }, // Needle Wick bottom
+          { o: 130.9, h: 131.8, l: 130.8, c: 131.35 }, // Absorption hammer
+          { o: 131.35, h: 132.8, l: 131.2, c: 132.4 }, // Surge green
+          { o: 132.4, h: 133.8, l: 132.3, c: 133.5 },
+          { o: 133.5, h: 134.8, l: 133.4, c: 134.5 }, // Hits TP
+          { o: 134.5, h: 135.4, l: 134.4, c: 135.2 }
         ]
       },
+
+      // 2. BTC: Institutional Consolidation, Cascade & Double-Bottom Re-test (18 Candles)
       BTCUSDT: {
         symbol: 'BTCUSDT',
         name: 'Bitcoin',
@@ -593,35 +582,47 @@
         pnlUsd: 4.78,
         roiPct: 2.39,
         proof: '7b6a1902cba8712390fca71823901bca871092837bc90182371902837bc90182',
+        liqStepIndex: 10,
+        entryStepIndex: 12,
         frames: [
-          { p: 92450.00, liq: 45000, oib: 0.05, state: 'STANDBY', reason: 'BTC perpetual book nominal. Spread 0.1 USDT.' },
-          { p: 92380.00, liq: 85000, oib: 0.02, state: 'STANDBY', reason: 'Minor long exits. Watching support at $92k.' },
-          { p: 92200.00, liq: 210000, oib: -0.25, state: 'STANDBY', reason: 'Bid thinning around $92k.' },
-          { p: 91500.00, liq: 1200000, oib: -0.65, state: 'ALERT', reason: 'BTC cascade triggered! $1.2M liquidated across perp book.' },
-          { p: 90800.00, liq: 2900000, oib: -0.78, state: 'ALERT', reason: 'Massive liquidation cascade ($2.9M). Knife falling below $91k.' },
-          { p: 89800.00, liq: 4800000, oib: -0.82, state: 'ALERT', reason: 'Peak $4.8M liquidation surge! Wick reaching $89.6k.' },
-          { p: 89650.00, liq: 1800000, oib: +0.65, state: 'ALERT', reason: 'Forced selling decelerating. Institutional block bids appearing.' },
-          { p: 89950.00, liq: 450000, oib: +0.81, state: 'ARMED', reason: 'Absorption confirmed on BTC (OIB: +0.81). Armed for snipe.' },
-          { p: 90600.00, liq: 90000, oib: +0.35, state: 'TRIGGERED', reason: 'Iceberg buy placed at $89,950. Hard Stop-Loss set at $89,230.' },
-          { p: 91400.00, liq: 25000, oib: +0.20, state: 'STANDBY', reason: 'Aggressive V-shape rebound. Price reclaiming $91.4k.' },
-          { p: 92100.00, liq: 5000, oib: +0.10, state: 'STANDBY', reason: 'Take-Profit executed at $92,100! (+2.39% ROI).' },
-          { p: 92450.00, liq: 0, oib: +0.05, state: 'STANDBY', reason: 'Cycle finished. +$4.78 USDT profit. Back to scanning.' }
+          { p: 92450.00, liq: 45000, oib: 0.05, state: 'STANDBY', reason: 'BTC trading in tight 100 USDT range.' },
+          { p: 92480.00, liq: 55000, oib: 0.04, state: 'STANDBY', reason: 'Consolidation at $92.4k resistance.' },
+          { p: 92520.00, liq: 70000, oib: 0.02, state: 'STANDBY', reason: 'Whale wall holding at $92.5k.' },
+          { p: 92420.00, liq: 110000, oib: -0.15, state: 'STANDBY', reason: 'Minor rejection from high.' },
+          { p: 92250.00, liq: 280000, oib: -0.35, state: 'STANDBY', reason: 'Support cracked at $92.3k.' },
+          { p: 91700.00, liq: 1100000, oib: -0.65, state: 'ALERT', reason: 'Institutional long stops hit! $1.1M cascade.' },
+          { p: 91100.00, liq: 2200000, oib: -0.75, state: 'ALERT', reason: 'Cascade extending down to $91k.' },
+          { p: 90400.00, liq: 3400000, oib: -0.82, state: 'ALERT', reason: 'Deep capitulation cascade ($3.4M).' },
+          { p: 89600.00, liq: 4800000, oib: -0.85, state: 'ALERT', reason: 'Primary liquidation low at $89.6k.' },
+          { p: 90150.00, liq: 1800000, oib: +0.20, state: 'ALERT', reason: 'First bounce, testing secondary sweep.' },
+          { p: 89700.00, liq: 650000, oib: +0.65, state: 'ALERT', reason: 'Double-bottom re-test held above $89.6k!' },
+          { p: 89950.00, liq: 210000, oib: +0.81, state: 'ARMED', reason: 'Absorption confirmed on Double-Bottom. Sniper armed.' },
+          { p: 90500.00, liq: 60000, oib: +0.45, state: 'TRIGGERED', reason: 'Iceberg buy placed at $89,950. SL: $89,230.' },
+          { p: 91200.00, liq: 20000, oib: +0.30, state: 'STANDBY', reason: 'Multi-candle staircase climbing back.' },
+          { p: 91750.00, liq: 10000, oib: +0.20, state: 'STANDBY', reason: 'Approaching EMA 20 band.' },
+          { p: 92100.00, liq: 0, oib: +0.10, state: 'STANDBY', reason: 'Take-Profit reached at $92,100! (+2.39% ROI).' }
         ],
         candles: [
-          { o: 92500, h: 92600, l: 92350, c: 92450 },
-          { o: 92450, h: 92500, l: 92300, c: 92380 },
-          { o: 92380, h: 92400, l: 92100, c: 92200 },
-          { o: 92200, h: 92200, l: 91200, c: 91500 },
-          { o: 91500, h: 91600, l: 90400, c: 90800 },
-          { o: 90800, h: 90900, l: 89600, c: 89800 },
-          { o: 89800, h: 90100, l: 89600, c: 89650 },
-          { o: 89650, h: 90200, l: 89600, c: 89950 },
-          { o: 89950, h: 90900, l: 89900, c: 90600 },
-          { o: 90600, h: 91600, l: 90500, c: 91400 },
-          { o: 91400, h: 92200, l: 91300, c: 92100 },
-          { o: 92100, h: 92600, l: 92000, c: 92450 }
+          { o: 92420, h: 92490, l: 92390, c: 92450 },
+          { o: 92450, h: 92530, l: 92420, c: 92480 },
+          { o: 92480, h: 92560, l: 92440, c: 92520 },
+          { o: 92520, h: 92540, l: 92380, c: 92420 },
+          { o: 92420, h: 92450, l: 92180, c: 92250 },
+          { o: 92250, h: 92280, l: 91600, c: 91700 },
+          { o: 91700, h: 91750, l: 90950, c: 91100 },
+          { o: 91100, h: 91150, l: 90200, c: 90400 },
+          { o: 90400, h: 90450, l: 89600, c: 89650 }, // Low 1
+          { o: 89650, h: 90250, l: 89650, c: 90150 }, // Bounce 1
+          { o: 90150, h: 90200, l: 89700, c: 89800 }, // Re-test Low 2 (Double bottom)
+          { o: 89800, h: 90100, l: 89750, c: 89950 }, // Absorption
+          { o: 89950, h: 90600, l: 89920, c: 90500 }, // Stair 1
+          { o: 90500, h: 91300, l: 90480, c: 91200 }, // Stair 2
+          { o: 91200, h: 91850, l: 91150, c: 91750 }, // Stair 3
+          { o: 91750, h: 92200, l: 91700, c: 92100 }  // Hits TP
         ]
       },
+
+      // 3. ETH: Choppy Descending Wedge & Morning-Star Reversal (16 Candles)
       ETHUSDT: {
         symbol: 'ETHUSDT',
         name: 'Ethereum',
@@ -635,35 +636,43 @@
         pnlUsd: 4.81,
         roiPct: 2.41,
         proof: '98f7123ca8710bba120937cd6281736bba1723c09f8261ab72810938bca8710a',
+        liqStepIndex: 8,
+        entryStepIndex: 10,
         frames: [
-          { p: 3450.00, liq: 35000, oib: -0.05, state: 'STANDBY', reason: 'ETH perpetual book nominal.' },
-          { p: 3440.00, liq: 60000, oib: -0.10, state: 'STANDBY', reason: 'Mild selling pressure on ETH.' },
-          { p: 3410.00, liq: 350000, oib: -0.45, state: 'STANDBY', reason: 'DeFi liquidation tremors.' },
-          { p: 3370.00, liq: 1100000, oib: -0.72, state: 'ALERT', reason: 'ETH liquidation surge: $1.1M in 10s.' },
-          { p: 3330.00, liq: 2400000, oib: -0.80, state: 'ALERT', reason: 'Heavy liquidation cascade ($2.4M). Knife falling.' },
-          { p: 3310.00, liq: 2100000, oib: -0.65, state: 'ALERT', reason: 'Selling pressure decelerating near $3,310.' },
-          { p: 3315.00, liq: 850000, oib: +0.68, state: 'ALERT', reason: 'Absorption confirmed. Whales defending $3,310.' },
-          { p: 3325.00, liq: 210000, oib: +0.76, state: 'ARMED', reason: 'Absorption confirmed (OIB: +0.76). Sniper armed.' },
-          { p: 3350.00, liq: 45000, oib: +0.30, state: 'TRIGGERED', reason: 'Iceberg buy placed at $3,325. Hard SL at $3,298.' },
-          { p: 3380.00, liq: 15000, oib: +0.20, state: 'STANDBY', reason: 'Strong bounce back above $3,380.' },
-          { p: 3405.00, liq: 5000, oib: +0.10, state: 'STANDBY', reason: 'Take-Profit executed at $3,405! (+2.41% ROI).' },
-          { p: 3425.00, liq: 0, oib: +0.05, state: 'STANDBY', reason: 'Cycle finished. +$4.81 USDT profit.' }
+          { p: 3420.50, liq: 35000, oib: -0.05, state: 'STANDBY', reason: 'ETH perpetual book nominal.' },
+          { p: 3425.00, liq: 45000, oib: -0.02, state: 'STANDBY', reason: 'Re-testing local high.' },
+          { p: 3415.00, liq: 95000, oib: -0.18, state: 'STANDBY', reason: 'Lower high established.' },
+          { p: 3400.00, liq: 180000, oib: -0.32, state: 'STANDBY', reason: 'Descending wedge compression.' },
+          { p: 3385.00, liq: 420000, oib: -0.58, state: 'ALERT', reason: 'Breakdown of wedge: $420k liquidated.' },
+          { p: 3360.00, liq: 1100000, oib: -0.74, state: 'ALERT', reason: 'DeFi protocol collateral liquidations.' },
+          { p: 3330.00, liq: 2100000, oib: -0.81, state: 'ALERT', reason: 'Severe liquidation plunge ($2.1M).' },
+          { p: 3310.00, liq: 2400000, oib: -0.65, state: 'ALERT', reason: 'Bottom wick at $3,310. Selling exhausted.' },
+          { p: 3315.00, liq: 750000, oib: +0.40, state: 'ALERT', reason: 'Morning star star candle formed.' },
+          { p: 3325.00, liq: 180000, oib: +0.76, state: 'ARMED', reason: 'Morning Star confirmed (OIB: +0.76). Armed.' },
+          { p: 3350.00, liq: 45000, oib: +0.35, state: 'TRIGGERED', reason: 'Iceberg buy placed at $3,325. SL: $3,298.' },
+          { p: 3375.00, liq: 15000, oib: +0.25, state: 'STANDBY', reason: 'Smooth trend reversal.' },
+          { p: 3395.00, liq: 8000, oib: +0.15, state: 'STANDBY', reason: 'Approaching take profit level.' },
+          { p: 3405.00, liq: 0, oib: +0.10, state: 'STANDBY', reason: 'Take-Profit reached at $3,405! (+2.41% ROI).' }
         ],
         candles: [
-          { o: 3455, h: 3465, l: 3445, c: 3450 },
-          { o: 3450, h: 3455, l: 3435, c: 3440 },
-          { o: 3440, h: 3445, l: 3400, c: 3410 },
-          { o: 3410, h: 3415, l: 3360, c: 3370 },
-          { o: 3370, h: 3375, l: 3320, c: 3330 },
-          { o: 3330, h: 3335, l: 3305, c: 3310 },
-          { o: 3310, h: 3325, l: 3308, c: 3315 },
-          { o: 3315, h: 3340, l: 3312, c: 3325 },
-          { o: 3325, h: 3360, l: 3320, c: 3350 },
-          { o: 3350, h: 3390, l: 3345, c: 3380 },
-          { o: 3380, h: 3415, l: 3375, c: 3405 },
-          { o: 3405, h: 3430, l: 3400, c: 3425 }
+          { o: 3418, h: 3426, l: 3415, c: 3420.5 },
+          { o: 3420.5, h: 3428, l: 3418, c: 3425 },
+          { o: 3425, h: 3427, l: 3412, c: 3415 },
+          { o: 3415, h: 3418, l: 3395, c: 3400 },
+          { o: 3400, h: 3402, l: 3380, c: 3385 },
+          { o: 3385, h: 3388, l: 3355, c: 3360 },
+          { o: 3360, h: 3362, l: 3325, c: 3330 },
+          { o: 3330, h: 3332, l: 3310, c: 3312 }, // Long red
+          { o: 3312, h: 3320, l: 3310, c: 3315 }, // Morning star doji
+          { o: 3315, h: 3335, l: 3312, c: 3325 }, // Bullish confirmation
+          { o: 3325, h: 3358, l: 3322, c: 3350 },
+          { o: 3350, h: 3382, l: 3348, c: 3375 },
+          { o: 3375, h: 3402, l: 3372, c: 3395 },
+          { o: 3395, h: 3412, l: 3390, c: 3405 }  // Hits TP
         ]
       },
+
+      // 4. DOGE: Hyper-Volatile Memecoin Elevator Dump & Erratic Spikes (16 Candles)
       DOGEUSDT: {
         symbol: 'DOGEUSDT',
         name: 'Dogecoin',
@@ -677,31 +686,37 @@
         pnlUsd: 4.96,
         roiPct: 2.48,
         proof: 'a4b8921dfc630129a8be17cf4982619cd8fe210a471b6201bba87c293012a9bc',
+        liqStepIndex: 8,
+        entryStepIndex: 9,
         frames: [
-          { p: 0.2150, liq: 20000, oib: 0.05, state: 'STANDBY', reason: 'DOGE meme flow nominal.' },
-          { p: 0.2130, liq: 65000, oib: -0.15, state: 'STANDBY', reason: 'Sell pressure accelerating on DOGE.' },
-          { p: 0.2080, liq: 380000, oib: -0.65, state: 'ALERT', reason: 'DOGE meme liquidation spike: $380k in 10s.' },
-          { p: 0.2020, liq: 820000, oib: -0.85, state: 'ALERT', reason: 'High-volatility cascade ($820k). Knife falling.' },
-          { p: 0.1980, liq: 650000, oib: -0.45, state: 'ALERT', reason: 'Wick reaching $0.1980. Bids starting to absorb.' },
-          { p: 0.2000, liq: 240000, oib: +0.75, state: 'ALERT', reason: 'Strong buyer absorption at $0.2000 level.' },
+          { p: 0.2150, liq: 20000, oib: 0.05, state: 'STANDBY', reason: 'DOGE choppy meme noise.' },
+          { p: 0.2170, liq: 45000, oib: 0.10, state: 'STANDBY', reason: 'Sudden retail FOMO wick up.' },
+          { p: 0.2135, liq: 90000, oib: -0.20, state: 'STANDBY', reason: 'Instant rejection from top.' },
+          { p: 0.2110, liq: 180000, oib: -0.45, state: 'STANDBY', reason: 'Whale stops starting to cascade.' },
+          { p: 0.2060, liq: 420000, oib: -0.68, state: 'ALERT', reason: 'DOGE elevator dump! $420k in 10s.' },
+          { p: 0.2010, liq: 710000, oib: -0.84, state: 'ALERT', reason: 'Extreme meme capitulation ($710k).' },
+          { p: 0.1980, liq: 820000, oib: -0.50, state: 'ALERT', reason: 'Giant flash wick bottom at $0.1980.' },
+          { p: 0.2000, liq: 250000, oib: +0.65, state: 'ALERT', reason: 'Frenzied meme dip-buyers rushing in.' },
           { p: 0.2015, liq: 80000, oib: +0.82, state: 'ARMED', reason: 'Absorption confirmed (OIB: +0.82). Sniper armed.' },
-          { p: 0.2035, liq: 25000, oib: +0.35, state: 'TRIGGERED', reason: 'Iceberg buy placed at $0.2015. Hard SL at $0.1965.' },
-          { p: 0.2050, liq: 8000, oib: +0.20, state: 'STANDBY', reason: 'Sharp meme recovery surge.' },
+          { p: 0.2035, liq: 30000, oib: +0.40, state: 'TRIGGERED', reason: 'Iceberg buy placed at $0.2015. SL: $0.1965.' },
+          { p: 0.2052, liq: 10000, oib: +0.25, state: 'STANDBY', reason: 'Volatile surge back towards resistance.' },
           { p: 0.2065, liq: 2000, oib: +0.10, state: 'STANDBY', reason: 'Take-Profit hit at $0.2065! (+2.48% ROI).' },
-          { p: 0.2080, liq: 0, oib: +0.05, state: 'STANDBY', reason: 'Cycle complete. +$4.96 USDT profit deposited.' }
+          { p: 0.2078, liq: 0, oib: +0.05, state: 'STANDBY', reason: 'Full mean-reversion finished.' }
         ],
         candles: [
-          { o: 0.216, h: 0.217, l: 0.214, c: 0.215 },
-          { o: 0.215, h: 0.215, l: 0.212, c: 0.213 },
-          { o: 0.213, h: 0.214, l: 0.206, c: 0.208 },
-          { o: 0.208, h: 0.209, l: 0.200, c: 0.202 },
-          { o: 0.202, h: 0.203, l: 0.198, c: 0.199 },
-          { o: 0.199, h: 0.201, l: 0.198, c: 0.200 },
-          { o: 0.200, h: 0.202, l: 0.199, c: 0.2015 },
-          { o: 0.2015, h: 0.204, l: 0.201, c: 0.2035 },
-          { o: 0.2035, h: 0.206, l: 0.203, c: 0.2050 },
-          { o: 0.2050, h: 0.208, l: 0.204, c: 0.2065 },
-          { o: 0.2065, h: 0.209, l: 0.206, c: 0.2080 }
+          { o: 0.2142, h: 0.2165, l: 0.2135, c: 0.2150 },
+          { o: 0.2150, h: 0.2185, l: 0.2145, c: 0.2170 }, // Erratic upper wick
+          { o: 0.2170, h: 0.2175, l: 0.2120, c: 0.2135 },
+          { o: 0.2135, h: 0.2140, l: 0.2095, c: 0.2110 },
+          { o: 0.2110, h: 0.2115, l: 0.2045, c: 0.2060 }, // Long elevator dump
+          { o: 0.2060, h: 0.2065, l: 0.1995, c: 0.2010 },
+          { o: 0.2010, h: 0.2025, l: 0.1980, c: 0.1990 }, // Giant flash wick
+          { o: 0.1990, h: 0.2020, l: 0.1985, c: 0.2000 },
+          { o: 0.2000, h: 0.2025, l: 0.1995, c: 0.2015 }, // Rebound hammer
+          { o: 0.2015, h: 0.2045, l: 0.2010, c: 0.2035 },
+          { o: 0.2035, h: 0.2060, l: 0.2025, c: 0.2052 },
+          { o: 0.2052, h: 0.2075, l: 0.2045, c: 0.2065 }, // Hits TP
+          { o: 0.2065, h: 0.2090, l: 0.2060, c: 0.2078 }
         ]
       }
     };
@@ -714,8 +729,9 @@
     const terminal = document.getElementById('terminal');
     const symbolVal = document.getElementById('symbolVal');
     const priceVal = document.getElementById('priceVal');
+    const balanceVal = document.getElementById('balanceVal');
+    const pnlVal = document.getElementById('pnlVal');
     const liqVal = document.getElementById('liqVal');
-    const treasuryVal = document.getElementById('treasuryVal');
     const stateBadge = document.getElementById('stateBadge');
     const liqFill = document.getElementById('liqFill');
     const liqVelocityLabel = document.getElementById('liqVelocityLabel');
@@ -752,12 +768,12 @@
 
     function renderHeatmap() {
       heatmapGrid.innerHTML = matrixData.map(m => `
-        <div class="heat-card ${m.symbol === pairSelect.value ? 'selected' : ''}" onclick="selectPair('${m.symbol}')">
+        <div class="heat-card ${m.symbol === activeScenario.symbol ? 'selected' : ''}" onclick="selectPair('${m.symbol}')">
           <div class="heat-header">
             <span>${m.symbol.replace('USDT', '')}</span>
             <span style="color: ${m.change24h >= 0 ? 'var(--green)' : 'var(--red)'}">${m.change24h >= 0 ? '+' : ''}${m.change24h}%</span>
           </div>
-          <div class="heat-price">$${m.price > 1 ? m.price.toFixed(2) : m.price.toFixed(6)}</div>
+          <div class="heat-price">$${m.price > 1 ? m.price.toFixed(2) : m.price.toFixed(4)}</div>
           <div class="heat-footer">
             <span>Liq: $${(m.liq10s / 1000).toFixed(0)}k</span>
             <span class="heat-tag tag-${m.status}">${m.status}</span>
@@ -767,9 +783,10 @@
     }
 
     window.selectPair = function(symbol) {
+      if (!pairScenarios[symbol]) return;
+      activeScenario = pairScenarios[symbol];
       pairSelect.value = symbol;
       symbolVal.innerText = symbol;
-      activeScenario = pairScenarios[symbol] || pairScenarios.SOLUSDT;
       priceVal.innerText = '$' + activeScenario.basePrice.toFixed(activeScenario.decimals);
       liqVal.innerText = '$0k';
       stateBadge.className = 'state-badge state-STANDBY';
@@ -778,10 +795,18 @@
       cortexBox.style.display = 'none';
       renderHeatmap();
       drawCandleChart(0);
-      logLine(new Date().toISOString().substring(11, 19), `Switched target asset to ${symbol}. Ready for liquidation simulation.`, '');
+      logLine(new Date().toISOString().substring(11, 19), `Switched target asset to ${symbol}. Ready for scenario simulation.`, '');
     };
 
     function renderLedger() {
+      const ledgerData = [
+        { id: 'SNIP_048', time: '14:22:10', symbol: 'SOLUSDT', side: 'BUY', type: 'ICEBERG', entry: 131.35, exit: 134.50, pnlUsd: +5.56, pnlPct: +2.78, duration: '45s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: 'cd85284218f8b2102c2616fcdcf6ccc3c7b553e6b6de115a1eddf7db65bc8307' },
+        { id: 'SNIP_047', time: '13:05:42', symbol: 'DOGEUSDT', side: 'BUY', type: 'ICEBERG', entry: 0.2015, exit: 0.2065, pnlUsd: +4.96, pnlPct: +2.48, duration: '38s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: 'a4b8921dfc630129a8be17cf4982619cd8fe210a471b6201bba87c293012a9bc' },
+        { id: 'SNIP_046', time: '11:40:15', symbol: 'BTCUSDT', side: 'BUY', type: 'ICEBERG', entry: 89950.00, exit: 92100.00, pnlUsd: +4.78, pnlPct: +2.39, duration: '54s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: '7b6a1902cba8712390fca71823901bca871092837bc90182371902837bc90182' },
+        { id: 'SNIP_045', time: '09:15:30', symbol: 'ETHUSDT', side: 'BUY', type: 'ICEBERG', entry: 3325.00, exit: 3405.00, pnlUsd: +4.81, pnlPct: +2.41, duration: '50s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: '98f7123ca8710bba120937cd6281736bba1723c09f8261ab72810938bca8710a' },
+        { id: 'SNIP_044', time: '07:50:18', symbol: 'SOLUSDT', side: 'BUY', type: 'ICEBERG', entry: 129.50, exit: 132.80, pnlUsd: +6.10, pnlPct: +2.55, duration: '41s', x402Cost: 0.0005, status: 'TAKE_PROFIT', proof: '1e2c9f6bb15e3a50c1d47fa26fa9891dc0900fd8b5ccbc70e0c24302ad95b02c' }
+      ];
+
       ledgerTableBody.innerHTML = ledgerData.map(row => `
         <tr>
           <td>${row.id}</td>
@@ -838,6 +863,7 @@
       equityCtx.fill();
     }
 
+    // HIGH-FIDELITY TRADINGVIEW-STYLE CANVAS ENGINE
     function drawCandleChart(frameStep = 0) {
       const w = candleCanvas.width;
       const h = candleCanvas.height;
@@ -846,30 +872,30 @@
       const s = activeScenario;
       const candles = s.candles;
 
-      // Draw Watermark Background
+      // 1. Watermark Identifier
       candleCtx.fillStyle = 'rgba(255, 255, 255, 0.035)';
       candleCtx.font = '800 22px Inter, sans-serif';
       candleCtx.textAlign = 'left';
-      candleCtx.fillText(`${s.symbol} • 1m BINANCE FUTURES (CASCADE REPLAY)`, 25, 42);
+      candleCtx.fillText(`${s.symbol} • 1m BINANCE FUTURES (CASCADE REPLAY)`, 20, 36);
 
-      const plotRight = w - 95; // Reserve right 95px for Y-Axis Price Scale
-      const candleAreaBottom = h - 45; // Reserve bottom 45px for Volume Histogram
+      const plotRight = w - 85; // Right price margin
+      const candleAreaBottom = h - 42; // Bottom volume margin
 
       const minPrice = Math.min(...candles.map(c => c.l)) * 0.9985;
       const maxPrice = Math.max(...candles.map(c => c.h)) * 1.0015;
 
       function priceToY(p) {
-        return candleAreaBottom - ((p - minPrice) / (maxPrice - minPrice)) * (candleAreaBottom - 40) - 15;
+        return candleAreaBottom - ((p - minPrice) / (maxPrice - minPrice)) * (candleAreaBottom - 45) - 15;
       }
 
-      // Draw Horizontal Gridlines & Right Y-Axis Price Ticks
-      candleCtx.strokeStyle = '#161d26';
+      // 2. Horizontal Price Gridlines & Right Y-Axis Price Ticks
+      candleCtx.strokeStyle = '#141a22';
       candleCtx.lineWidth = 1;
 
-      // Vertical separator for price scale
+      // Vertical separator
       candleCtx.beginPath();
-      candleCtx.moveTo(plotRight, 10);
-      candleCtx.lineTo(plotRight, h - 10);
+      candleCtx.moveTo(plotRight, 8);
+      candleCtx.lineTo(plotRight, h - 8);
       candleCtx.stroke();
 
       candleCtx.font = '10px JetBrains Mono';
@@ -881,31 +907,53 @@
         const y = priceToY(p);
 
         candleCtx.beginPath();
-        candleCtx.moveTo(20, y);
+        candleCtx.moveTo(15, y);
         candleCtx.lineTo(plotRight, y);
         candleCtx.stroke();
 
-        candleCtx.fillText('$' + p.toFixed(s.decimals), plotRight + 8, y + 3);
+        candleCtx.fillText('$' + p.toFixed(s.decimals), plotRight + 6, y + 3);
       }
 
-      // Draw Volume Sub-Chart Separator
-      candleCtx.strokeStyle = '#1e2633';
+      // 3. Volume Sub-Chart Separator
+      candleCtx.strokeStyle = '#1b222d';
       candleCtx.beginPath();
-      candleCtx.moveTo(20, candleAreaBottom + 5);
-      candleCtx.lineTo(plotRight, candleAreaBottom + 5);
+      candleCtx.moveTo(15, candleAreaBottom + 4);
+      candleCtx.lineTo(plotRight, candleAreaBottom + 4);
       candleCtx.stroke();
 
-      const candleWidth = 24;
-      const spacing = Math.floor((plotRight - 50) / candles.length);
+      // 4. Calculate EMA 20 line
+      const emaPoints = [];
+      let k = 2 / (5 + 1);
+      let ema = candles[0].c;
+      for (let i = 0; i < candles.length; i++) {
+        ema = candles[i].c * k + ema * (1 - k);
+        emaPoints.push(ema);
+      }
+
+      // Draw EMA line up to limit
+      const spacing = Math.floor((plotRight - 40) / candles.length);
+      const candleWidth = Math.max(12, Math.min(22, spacing - 8));
       const limit = frameStep === 0 ? candles.length : Math.min(candles.length, Math.floor(frameStep) + 1);
 
+      candleCtx.beginPath();
+      for (let i = 0; i < limit; i++) {
+        const x = 25 + i * spacing + candleWidth / 2;
+        const y = priceToY(emaPoints[i]);
+        if (i === 0) candleCtx.moveTo(x, y);
+        else candleCtx.lineTo(x, y);
+      }
+      candleCtx.strokeStyle = 'rgba(240, 185, 11, 0.4)';
+      candleCtx.lineWidth = 1.5;
+      candleCtx.stroke();
+
+      // 5. Render Candlesticks and Volume Bars
       for (let i = 0; i < limit; i++) {
         const c = candles[i];
-        const x = 30 + i * spacing;
+        const x = 25 + i * spacing;
         const isUp = c.c >= c.o;
         const color = isUp ? '#0ecb81' : '#f6465d';
 
-        // 1. Candlestick Wick
+        // Wick
         candleCtx.strokeStyle = color;
         candleCtx.lineWidth = 2;
         candleCtx.beginPath();
@@ -913,20 +961,21 @@
         candleCtx.lineTo(x + candleWidth / 2, priceToY(c.l));
         candleCtx.stroke();
 
-        // 2. Candlestick Body
+        // Body
         candleCtx.fillStyle = color;
         const bodyTop = priceToY(Math.max(c.o, c.c));
         const bodyBottom = priceToY(Math.min(c.o, c.c));
         const bodyHeight = Math.max(3, bodyBottom - bodyTop);
         candleCtx.fillRect(x, bodyTop, candleWidth, bodyHeight);
 
-        // 3. Volume Histogram Bar
-        const volHeight = Math.min(30, (i === 6 || i === 7 ? 30 : 6 + (i * 7) % 18));
-        candleCtx.fillStyle = (i === 6 || i === 7) ? 'rgba(246, 70, 93, 0.7)' : (isUp ? 'rgba(14, 203, 129, 0.3)' : 'rgba(246, 70, 93, 0.3)');
-        candleCtx.fillRect(x + 2, h - volHeight - 5, candleWidth - 4, volHeight);
+        // Volume Bar
+        const isLiqBar = (i === s.liqStepIndex - 1 || i === s.liqStepIndex);
+        const volHeight = isLiqBar ? 32 : Math.min(24, Math.max(6, (Math.abs(c.c - c.o) / (maxPrice - minPrice)) * 180));
+        candleCtx.fillStyle = isLiqBar ? 'rgba(246, 70, 93, 0.85)' : (isUp ? 'rgba(14, 203, 129, 0.35)' : 'rgba(246, 70, 93, 0.35)');
+        candleCtx.fillRect(x + 1, h - volHeight - 3, candleWidth - 2, volHeight);
 
-        // Liquidation Shockwave Bubble at Wick Bottom (Candle 7)
-        if (i === 7 && frameStep >= 7) {
+        // Liquidation Shockwave Bubble
+        if (i === s.liqStepIndex && frameStep >= s.liqStepIndex) {
           candleCtx.fillStyle = 'rgba(246, 70, 93, 0.35)';
           candleCtx.beginPath();
           candleCtx.arc(x + candleWidth / 2, priceToY(c.l), 16, 0, Math.PI * 2);
@@ -938,43 +987,50 @@
           candleCtx.fillStyle = '#f6465d';
           candleCtx.font = 'bold 9px JetBrains Mono';
           candleCtx.textAlign = 'center';
-          candleCtx.fillText('💥 LIQ PEAK', x + candleWidth / 2, priceToY(c.l) + 26);
+          candleCtx.fillText('💥 LIQ PEAK', x + candleWidth / 2, priceToY(c.l) + 24);
           candleCtx.textAlign = 'left';
         }
 
-        // Snipe Entry & Guard Lines (Step >= 8)
-        if (i === 8 && frameStep >= 8) {
-          // Entry Marker
-          candleCtx.fillStyle = '#0ecb81';
-          candleCtx.font = 'bold 11px JetBrains Mono';
-          candleCtx.fillText(`🎯 BUY $${s.entryPrice.toFixed(s.decimals)}`, x - 10, priceToY(s.entryPrice) - 14);
+        // Snipe Entry & Guard Lines
+        if (i === s.entryStepIndex && frameStep >= s.entryStepIndex) {
+          // Entry Marker Badge (Pill with clean padding)
+          candleCtx.fillStyle = 'rgba(14, 203, 129, 0.95)';
+          const badgeText = `🎯 BUY $${s.entryPrice.toFixed(s.decimals)}`;
+          candleCtx.font = 'bold 10px JetBrains Mono';
+          const textW = candleCtx.measureText(badgeText).width;
+          const badgeX = Math.min(x - 5, plotRight - textW - 20);
+          const badgeY = priceToY(s.entryPrice) - 18;
+
+          candleCtx.fillRect(badgeX, badgeY, textW + 12, 16);
+          candleCtx.fillStyle = '#000';
+          candleCtx.fillText(badgeText, badgeX + 6, badgeY + 12);
 
           // Hard Stop Loss Line & Y-Badge
           candleCtx.strokeStyle = 'rgba(246, 70, 93, 0.85)';
           candleCtx.setLineDash([4, 4]);
           candleCtx.beginPath();
-          candleCtx.moveTo(x - 20, priceToY(s.stopLoss));
+          candleCtx.moveTo(x - 10, priceToY(s.stopLoss));
           candleCtx.lineTo(plotRight, priceToY(s.stopLoss));
           candleCtx.stroke();
 
           candleCtx.fillStyle = 'rgba(246, 70, 93, 0.9)';
-          candleCtx.fillRect(plotRight + 2, priceToY(s.stopLoss) - 8, 88, 16);
+          candleCtx.fillRect(plotRight + 2, priceToY(s.stopLoss) - 8, 80, 16);
           candleCtx.fillStyle = '#fff';
           candleCtx.font = 'bold 9px JetBrains Mono';
-          candleCtx.fillText(`SL $${s.stopLoss.toFixed(s.decimals)}`, plotRight + 6, priceToY(s.stopLoss) + 4);
+          candleCtx.fillText(`SL $${s.stopLoss.toFixed(s.decimals)}`, plotRight + 5, priceToY(s.stopLoss) + 4);
 
           // Take Profit Line & Y-Badge
           candleCtx.strokeStyle = 'rgba(240, 185, 11, 0.85)';
           candleCtx.beginPath();
-          candleCtx.moveTo(x - 20, priceToY(s.takeProfit));
+          candleCtx.moveTo(x - 10, priceToY(s.takeProfit));
           candleCtx.lineTo(plotRight, priceToY(s.takeProfit));
           candleCtx.stroke();
 
           candleCtx.fillStyle = 'rgba(240, 185, 11, 0.9)';
-          candleCtx.fillRect(plotRight + 2, priceToY(s.takeProfit) - 8, 88, 16);
+          candleCtx.fillRect(plotRight + 2, priceToY(s.takeProfit) - 8, 80, 16);
           candleCtx.fillStyle = '#000';
           candleCtx.font = 'bold 9px JetBrains Mono';
-          candleCtx.fillText(`TP $${s.takeProfit.toFixed(s.decimals)}`, plotRight + 6, priceToY(s.takeProfit) + 4);
+          candleCtx.fillText(`TP $${s.takeProfit.toFixed(s.decimals)}`, plotRight + 5, priceToY(s.takeProfit) + 4);
 
           candleCtx.setLineDash([]);
         }
@@ -1013,7 +1069,7 @@
           actionBtn.innerText = '🚀 Run Cascade Simulation';
           drawCandleChart(s.frames.length);
 
-          // Update Financial Capital & Realized PnL!
+          // Update Capital and Realized PnL
           subAccountCapital += s.pnlUsd;
           realizedSessionPnl += s.pnlUsd;
           completedTradesCount++;
@@ -1022,7 +1078,6 @@
           balanceVal.innerText = '$' + subAccountCapital.toFixed(2);
           pnlVal.innerText = `+$${realizedSessionPnl.toFixed(2)} (+${pnlPctTotal}%)`;
 
-          treasuryVal.innerText = '$' + (1.0000 + completedTradesCount * 0.0556).toFixed(4);
           pnlBanner.innerText = `💰 Trade Completed on ${s.symbol}: +$${s.pnlUsd.toFixed(2)} USDT (+${s.roiPct}% ROI) | +$0.0556 deposited to Treasury (Self-Sustaining ✅)`;
           logLine('14:23:00', `[CAPITAL UPDATE] Sub-Account Balance: $${subAccountCapital.toFixed(2)} USDT | Session PnL: +$${realizedSessionPnl.toFixed(2)} (${completedTradesCount} Trades, 100% Win)`, 'log-order');
           return;
@@ -1076,7 +1131,15 @@
       step();
     });
 
-    // Init
+    const equityPoints = [
+      10000, 10055, 10112, 10078, 10145, 10210, 10290, 10355, 10320, 10410,
+      10530, 10620, 10700, 10650, 10780, 10890, 10970, 11050, 11180, 11290,
+      11240, 11360, 11490, 11600, 11720, 11850, 11810, 11950, 12080, 12190,
+      12320, 12450, 12400, 12560, 12690, 12810, 12940, 13080, 13190, 13150,
+      13290, 13462.40
+    ];
+
+    // Initialize
     renderHeatmap();
     renderLedger();
     drawCandleChart(0);
