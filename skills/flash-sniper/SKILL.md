@@ -4,7 +4,7 @@ title: Binance FlashSniper (Microstructure Liquidation Cascade Hunter)
 description: Autonomous quantitative liquidation cascade sniper with real-time orderbook absorption verification and strict Agentic sub-account risk gates.
 metadata:
   version: 1.0.0
-  author: FlashSniper Team
+  author: duclucky
   openclaw:
     requires:
       bins:
