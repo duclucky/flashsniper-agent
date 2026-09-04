@@ -4,7 +4,7 @@
 > *Submission for the Binance Agent OS Mini Hackathon — Track A: Build an AI Agent with Agent OS.*
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-17%2F17%20Passing-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-23%2F23%20Passing-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
 [![Binance Agent OS](https://img.shields.io/badge/Binance-Agent%20OS-F0B90B?style=flat-square&logo=binance)](https://github.com/binance/binance-skills-hub)
 [![Economics](https://img.shields.io/badge/x402-Self--Sustaining%20Treasury-purple?style=flat-square)](#self-sustaining-x402-inference-treasury)
 [![Security](https://img.shields.io/badge/Sub--Account-Zero%20Withdrawal-green?style=flat-square)](#security--risk-controls)
@@ -20,22 +20,33 @@ When leveraged positions get liquidated on Binance Futures, the exchange's liqui
 
 ---
 
+## 🌐 Live Production Deployments
+
+- **Official Landing Page & Specs:** [https://flashsniper-agent.vercel.app](https://flashsniper-agent.vercel.app)
+- **Interactive Simulator (Pure Replay, No Keys):** [https://flashsniper-agent.vercel.app/demo](https://flashsniper-agent.vercel.app/demo)
+- **GitHub Repository:** [https://github.com/duclucky/flashsniper-agent](https://github.com/duclucky/flashsniper-agent)
+
+---
+
 ## 🚀 Quick Start (Zero API Credentials Required)
 
 Judges can verify the entire pipeline deterministically without configuring API keys or depositing funds:
 
 ```bash
 # 1. Clone and install dependencies
-git clone https://github.com/<your-username>/flashsniper-agent
+git clone https://github.com/duclucky/flashsniper-agent
 cd flashsniper-agent
 npm install
 
 # 2. Run deterministic CLI simulation with real recorded cascade data
 npm run demo
 
-# 3. Or launch the interactive Web Dashboard
+# 3. Run Quantitative Backtest Lab over 50 historical flash crashes
+npm run backtest
+
+# 4. Or launch the interactive Web Dashboard & Trading Terminal
 npm run web
-# Open http://localhost:4173 in your browser and click "🚀 Simulate Flash Crash"
+# Auto-opens http://localhost:4173 in your default browser!
 ```
 
 To run all automated unit tests:
@@ -100,8 +111,6 @@ npm test
                                                       [Inference Treasury (+1% Profit)]
                                                       • Self-Sustaining Economic Loop ✅
 ```
-                                                      • Attach OCO / Trailing TP (+2.4%)
-```
 
 ---
 
@@ -119,13 +128,12 @@ FlashSniper adheres strictly to Binance Agent OS's security principles:
 
 ---
 
-## 🎬 90-Second Demo Video Script Outline
+## 🎬 87-Second Demo Video Script Outline
 
-* **00:00 - 00:15 (The Problem):** Show a cascading red candle on Binance Futures where liquidation wicks cause retail traders to get wiped out trying to catch falling knives.
-* **00:15 - 00:35 (The Sensor Stack):** Open the FlashSniper Web Dashboard. Show the Liquidation Velocity bar surging past $1.3M in 10s while the agent stays patient in `ALERT` state because Orderbook Imbalance is negative (-0.71).
-* **00:35 - 00:55 (The Snipe):** As selling decelerates, the OIB flips to +0.73. The Agent transitions to `ARMED` and dispatches an Iceberg limit buy order via Binance Agent OS with SHA-256 proof receipt.
-* **00:55 - 01:15 (The Rebound):** Price rebounds +2.78% in 45 seconds. Take-Profit triggers, securing profit with zero human panic.
-* **01:15 - 01:30 (Architecture & Agent OS):** Highlight the `SKILL.md` packaging, sub-account safety guardrails, and 14 passing automated tests.
+* **00:00 - 00:19 (The Problem):** The Retail Liquidation Trap on Binance Futures and why retail catches knives.
+* **00:19 - 00:54 (The Simulation):** Live Simulation: Liquidation Velocity (V-Liq) surge, negative OIB anti-knife hold, and Iceberg buy execution.
+* **00:54 - 01:14 (Quant Backtest):** Quant Backtest Lab (79.17% Win Rate across 50 events) & x402 Self-Sustaining M2M Treasury deposit.
+* **01:14 - 01:27 (Architecture & Agent OS):** Agent OS Compliance: Zero-withdrawal security, 23 passing tests, and Vercel production deployment.
 
 ---
 
@@ -133,9 +141,12 @@ FlashSniper adheres strictly to Binance Agent OS's security principles:
 
 ```text
 flashsniper-agent/
-├── .claude/launch.json          # Dev server launcher for preview
 ├── .openclaw/mcp-settings.json  # Binance Agent OS MCP server registration
 ├── skills/flash-sniper/SKILL.md # Binance Skills Hub standard definition
+├── data/
+│   ├── historical_cascades_50.json # 50 real liquidation events dataset
+│   ├── backtest_summary.json       # Mathematical backtest results
+│   └── backtest_trades.csv         # Full 50-row CSV audit ledger
 ├── corpus/solusdt-cascade.jsonl # Realistic recorded replay corpus
 ├── src/
 │   ├── types/index.ts           # Core data structures and interfaces
@@ -144,8 +155,32 @@ flashsniper-agent/
 │   │   ├── absorption_filter.ts # Orderbook Imbalance (OIB) & exhaustion
 │   │   └── signal_matrix.ts     # State machine (STANDBY/ALERT/ARMED)
 │   ├── risk/risk_gate.ts        # Position sizing, stop-loss & risk limits
+│   ├── execution/order_executor.ts # 3-legged bracket order executor
+│   ├── ai/cognitive_cortex.ts   # Tri-mode adversarial red-teaming
+│   ├── treasury/
+│   │   ├── inference_treasury.ts# Self-sustaining profit reserve
+│   │   └── x402_client.ts       # EIP-712 / EIP-3009 micro-payments
 │   ├── mcp/
 │   │   ├── client.ts            # Official Binance Agent OS MCP client
+│   │   ├── oauth.ts             # OAuth 2.0 PKCE manager (accounts.binance.com)
+│   │   └── replay.ts            # Deterministic simulation engine
+│   ├── backtest/
+│   │   ├── backtest_engine.ts   # L2 matching & slippage simulator
+│   │   ├── metrics.ts           # Win Rate, Profit Factor, Sharpe & Equity curve
+│   │   └── run_backtest.ts      # CLI backtest runner (npm run backtest)
+│   ├── web/
+│   │   ├── server.ts            # Native HTTP dashboard server (port 4173)
+│   │   └── public/
+│   │       ├── index.html       # Landing page with video walkthrough
+│   │       ├── demo.html        # Interactive Vercel Simulator (No live)
+│   │       └── live.html        # Local Trading Terminal (Demo & Live)
+│   └── agent.ts                 # CLI runner & Live stream orchestrator
+├── tests/engine.test.ts         # 23 automated unit tests (Vitest)
+├── vercel.json                  # 1-click Vercel deployment config
+├── .env.example                 # Environment configuration template
+├── package.json
+└── README.md
+```
 │   │   └── replay.ts            # Deterministic simulation engine
 │   ├── web/
 │   │   ├── server.ts            # Native HTTP dashboard server (port 4173)
