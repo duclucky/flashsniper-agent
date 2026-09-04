@@ -843,35 +843,69 @@
       const h = candleCanvas.height;
       candleCtx.clearRect(0, 0, w, h);
 
-      candleCtx.strokeStyle = '#161d26';
-      candleCtx.lineWidth = 1;
-      for (let y = 30; y < h; y += 45) {
-        candleCtx.beginPath();
-        candleCtx.moveTo(0, y);
-        candleCtx.lineTo(w, y);
-        candleCtx.stroke();
-      }
-
       const s = activeScenario;
       const candles = s.candles;
 
-      const candleWidth = 28;
-      const spacing = 62;
-      const minPrice = Math.min(...candles.map(c => c.l)) * 0.998;
-      const maxPrice = Math.max(...candles.map(c => c.h)) * 1.002;
+      // Draw Watermark Background
+      candleCtx.fillStyle = 'rgba(255, 255, 255, 0.035)';
+      candleCtx.font = '800 22px Inter, sans-serif';
+      candleCtx.textAlign = 'left';
+      candleCtx.fillText(`${s.symbol} • 1m BINANCE FUTURES (CASCADE REPLAY)`, 25, 42);
+
+      const plotRight = w - 95; // Reserve right 95px for Y-Axis Price Scale
+      const candleAreaBottom = h - 45; // Reserve bottom 45px for Volume Histogram
+
+      const minPrice = Math.min(...candles.map(c => c.l)) * 0.9985;
+      const maxPrice = Math.max(...candles.map(c => c.h)) * 1.0015;
 
       function priceToY(p) {
-        return h - ((p - minPrice) / (maxPrice - minPrice)) * (h - 50) - 25;
+        return candleAreaBottom - ((p - minPrice) / (maxPrice - minPrice)) * (candleAreaBottom - 40) - 15;
       }
 
+      // Draw Horizontal Gridlines & Right Y-Axis Price Ticks
+      candleCtx.strokeStyle = '#161d26';
+      candleCtx.lineWidth = 1;
+
+      // Vertical separator for price scale
+      candleCtx.beginPath();
+      candleCtx.moveTo(plotRight, 10);
+      candleCtx.lineTo(plotRight, h - 10);
+      candleCtx.stroke();
+
+      candleCtx.font = '10px JetBrains Mono';
+      candleCtx.fillStyle = '#64748b';
+      candleCtx.textAlign = 'left';
+
+      for (let i = 0; i <= 4; i++) {
+        const p = minPrice + (i / 4) * (maxPrice - minPrice);
+        const y = priceToY(p);
+
+        candleCtx.beginPath();
+        candleCtx.moveTo(20, y);
+        candleCtx.lineTo(plotRight, y);
+        candleCtx.stroke();
+
+        candleCtx.fillText('$' + p.toFixed(s.decimals), plotRight + 8, y + 3);
+      }
+
+      // Draw Volume Sub-Chart Separator
+      candleCtx.strokeStyle = '#1e2633';
+      candleCtx.beginPath();
+      candleCtx.moveTo(20, candleAreaBottom + 5);
+      candleCtx.lineTo(plotRight, candleAreaBottom + 5);
+      candleCtx.stroke();
+
+      const candleWidth = 24;
+      const spacing = Math.floor((plotRight - 50) / candles.length);
       const limit = frameStep === 0 ? candles.length : Math.min(candles.length, Math.floor(frameStep) + 1);
 
       for (let i = 0; i < limit; i++) {
         const c = candles[i];
-        const x = 40 + i * spacing;
+        const x = 30 + i * spacing;
         const isUp = c.c >= c.o;
         const color = isUp ? '#0ecb81' : '#f6465d';
 
+        // 1. Candlestick Wick
         candleCtx.strokeStyle = color;
         candleCtx.lineWidth = 2;
         candleCtx.beginPath();
@@ -879,45 +913,69 @@
         candleCtx.lineTo(x + candleWidth / 2, priceToY(c.l));
         candleCtx.stroke();
 
+        // 2. Candlestick Body
         candleCtx.fillStyle = color;
         const bodyTop = priceToY(Math.max(c.o, c.c));
         const bodyBottom = priceToY(Math.min(c.o, c.c));
-        candleCtx.fillRect(x, bodyTop, candleWidth, Math.max(3, bodyBottom - bodyTop));
+        const bodyHeight = Math.max(3, bodyBottom - bodyTop);
+        candleCtx.fillRect(x, bodyTop, candleWidth, bodyHeight);
+
+        // 3. Volume Histogram Bar
+        const volHeight = Math.min(30, (i === 6 || i === 7 ? 30 : 6 + (i * 7) % 18));
+        candleCtx.fillStyle = (i === 6 || i === 7) ? 'rgba(246, 70, 93, 0.7)' : (isUp ? 'rgba(14, 203, 129, 0.3)' : 'rgba(246, 70, 93, 0.3)');
+        candleCtx.fillRect(x + 2, h - volHeight - 5, candleWidth - 4, volHeight);
 
         // Liquidation Shockwave Bubble at Wick Bottom (Candle 7)
         if (i === 7 && frameStep >= 7) {
-          candleCtx.fillStyle = 'rgba(246, 70, 93, 0.3)';
+          candleCtx.fillStyle = 'rgba(246, 70, 93, 0.35)';
           candleCtx.beginPath();
           candleCtx.arc(x + candleWidth / 2, priceToY(c.l), 16, 0, Math.PI * 2);
           candleCtx.fill();
           candleCtx.strokeStyle = '#f6465d';
+          candleCtx.lineWidth = 1.5;
           candleCtx.stroke();
+
+          candleCtx.fillStyle = '#f6465d';
+          candleCtx.font = 'bold 9px JetBrains Mono';
+          candleCtx.textAlign = 'center';
+          candleCtx.fillText('💥 LIQ PEAK', x + candleWidth / 2, priceToY(c.l) + 26);
+          candleCtx.textAlign = 'left';
         }
 
         // Snipe Entry & Guard Lines (Step >= 8)
         if (i === 8 && frameStep >= 8) {
+          // Entry Marker
           candleCtx.fillStyle = '#0ecb81';
           candleCtx.font = 'bold 11px JetBrains Mono';
-          candleCtx.fillText(`🎯 BUY $${s.entryPrice.toFixed(s.decimals)}`, x - 10, priceToY(s.entryPrice) - 12);
+          candleCtx.fillText(`🎯 BUY $${s.entryPrice.toFixed(s.decimals)}`, x - 10, priceToY(s.entryPrice) - 14);
 
-          // Hard Stop Loss Line
-          candleCtx.strokeStyle = 'rgba(246, 70, 93, 0.8)';
+          // Hard Stop Loss Line & Y-Badge
+          candleCtx.strokeStyle = 'rgba(246, 70, 93, 0.85)';
           candleCtx.setLineDash([4, 4]);
           candleCtx.beginPath();
-          candleCtx.moveTo(x - 30, priceToY(s.stopLoss));
-          candleCtx.lineTo(w - 20, priceToY(s.stopLoss));
+          candleCtx.moveTo(x - 20, priceToY(s.stopLoss));
+          candleCtx.lineTo(plotRight, priceToY(s.stopLoss));
           candleCtx.stroke();
-          candleCtx.fillStyle = 'rgba(246, 70, 93, 0.9)';
-          candleCtx.fillText(`HARD SL $${s.stopLoss.toFixed(s.decimals)} (-0.8%)`, w - 190, priceToY(s.stopLoss) - 4);
 
-          // Take Profit Line
-          candleCtx.strokeStyle = 'rgba(240, 185, 11, 0.8)';
+          candleCtx.fillStyle = 'rgba(246, 70, 93, 0.9)';
+          candleCtx.fillRect(plotRight + 2, priceToY(s.stopLoss) - 8, 88, 16);
+          candleCtx.fillStyle = '#fff';
+          candleCtx.font = 'bold 9px JetBrains Mono';
+          candleCtx.fillText(`SL $${s.stopLoss.toFixed(s.decimals)}`, plotRight + 6, priceToY(s.stopLoss) + 4);
+
+          // Take Profit Line & Y-Badge
+          candleCtx.strokeStyle = 'rgba(240, 185, 11, 0.85)';
           candleCtx.beginPath();
-          candleCtx.moveTo(x - 30, priceToY(s.takeProfit));
-          candleCtx.lineTo(w - 20, priceToY(s.takeProfit));
+          candleCtx.moveTo(x - 20, priceToY(s.takeProfit));
+          candleCtx.lineTo(plotRight, priceToY(s.takeProfit));
           candleCtx.stroke();
+
           candleCtx.fillStyle = 'rgba(240, 185, 11, 0.9)';
-          candleCtx.fillText(`TAKE PROFIT $${s.takeProfit.toFixed(s.decimals)} (+2.4%)`, w - 190, priceToY(s.takeProfit) - 4);
+          candleCtx.fillRect(plotRight + 2, priceToY(s.takeProfit) - 8, 88, 16);
+          candleCtx.fillStyle = '#000';
+          candleCtx.font = 'bold 9px JetBrains Mono';
+          candleCtx.fillText(`TP $${s.takeProfit.toFixed(s.decimals)}`, plotRight + 6, priceToY(s.takeProfit) + 4);
+
           candleCtx.setLineDash([]);
         }
       }
