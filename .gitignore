@@ -8,4 +8,5 @@ dist/
 
 .vercel
 *.mp4
+!src/web/public/demo-video.mp4
 video_assets/

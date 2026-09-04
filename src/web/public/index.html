@@ -286,7 +286,6 @@
         <a href="#video">Video Demo</a>
         <a href="#architecture">Architecture</a>
         <a href="#specs">Specifications</a>
-        <a href="/live.html" class="btn btn-ghost" style="color: var(--yellow); border-color: rgba(240,185,11,0.4);">🟡 Trade Demo (Binance)</a>
         <a href="/demo.html" class="btn btn-yellow">🚀 Launch Simulator</a>
       </div>
     </div>
@@ -324,7 +323,7 @@
           <div class="stat-lbl">Max Drawdown</div>
         </div>
         <div class="stat-item">
-          <div class="stat-val">19 / 19</div>
+          <div class="stat-val">23 / 23</div>
           <div class="stat-lbl">Automated Unit Tests</div>
         </div>
         <div class="stat-item">
@@ -367,11 +366,11 @@
           <ul class="pvs-list">
             <li>
               <span>✅</span>
-              <div><strong>Liquidation Velocity ($V_{liq}$):</strong> Tracks rolling liquidation notional per second, alerting the agent only during genuine market dislocations (> $500k in 10s).</div>
+              <div><strong>Liquidation Velocity (V-Liq):</strong> Tracks rolling liquidation notional per second, alerting the agent only during genuine market dislocations (> $500k in 10s).</div>
             </li>
             <li>
               <span>✅</span>
-              <div><strong>Orderbook Absorption ($OIB$):</strong> Evaluates top-5 depth levels. Refuses entry until Orderbook Imbalance flips positive (+0.25) and liquidations decelerate.</div>
+              <div><strong>Orderbook Absorption (OIB):</strong> Evaluates top-5 depth levels. Refuses entry until Orderbook Imbalance flips positive (+0.25) and liquidations decelerate.</div>
             </li>
             <li>
               <span>✅</span>
@@ -385,34 +384,33 @@
     <!-- Video Demo Section -->
     <section id="video" class="video-section">
       <div class="section-header">
-        <h2>90-Second Demo Presentation</h2>
+        <h2>87-Second Official Demo Presentation</h2>
         <p>A concise walkthrough of the sensor stack, adversarial AI cortex, and self-sustaining execution.</p>
       </div>
 
       <div class="video-wrapper">
-        <div class="play-btn" onclick="window.location.href='/demo.html'">
-          <div class="play-triangle"></div>
-        </div>
-        <div style="margin-top: 16px; font-weight: 700; font-size: 14px; color: #fff;">Click to Launch Interactive Visual Walkthrough</div>
-        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Recorded on SOLUSDT 1-minute liquidation cascade</div>
+        <video controls playsinline preload="metadata" poster="/video-poster.png" style="width: 100%; height: 100%; border-radius: 8px; outline: none; object-fit: contain; background: #000;">
+          <source src="/demo-video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
 
       <div class="timestamps-grid">
         <div class="ts-box">
-          <div class="ts-time">00:00 — 00:20</div>
-          <div class="ts-desc">The Liquidation Cascade problem on Binance Futures and why retail catches knives.</div>
+          <div class="ts-time">00:00 — 00:19</div>
+          <div class="ts-desc">The Retail Liquidation Trap: Forced market orders on Binance Futures & why retail traders catch knives.</div>
         </div>
         <div class="ts-box">
-          <div class="ts-time">00:20 — 00:50</div>
-          <div class="ts-desc">Microstructure Sensors: $V_{liq}$ surge, negative OIB protection, and deceleration confirmation.</div>
+          <div class="ts-time">00:19 — 00:54</div>
+          <div class="ts-desc">Live Simulation: Liquidation Velocity (V-Liq) surge, negative OIB anti-knife hold, and Iceberg buy execution.</div>
         </div>
         <div class="ts-box">
-          <div class="ts-time">00:50 — 01:15</div>
-          <div class="ts-desc">Bracket Order placement via Binance Agent OS, Hard Stop-Loss, and Take-Profit execution.</div>
+          <div class="ts-time">00:54 — 01:14</div>
+          <div class="ts-desc">Quant Backtest Lab (79.17% Win Rate across 50 events) & x402 Self-Sustaining M2M Treasury deposit.</div>
         </div>
         <div class="ts-box">
-          <div class="ts-time">01:15 — 01:30</div>
-          <div class="ts-desc">x402 Self-Sustaining Treasury deposit, SKILL.md packaging, and 19 passing tests.</div>
+          <div class="ts-time">01:14 — 01:27</div>
+          <div class="ts-desc">Agent OS Compliance: Zero-withdrawal security, 23 passing tests, and Vercel production deployment.</div>
         </div>
       </div>
     </section>
