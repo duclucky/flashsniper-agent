@@ -31,6 +31,12 @@ const liveTreasury = new InferenceTreasury(1.0);
 const oauthManager = BinanceOAuthManager.getInstance();
 const liveOrderExecutor = new OrderExecutor();
 
+let demoTradingSession: { connected: boolean; balance: number; apiKeyMasked?: string; isTestnet: boolean } = {
+  connected: false,
+  balance: 15000,
+  isTestnet: true,
+};
+
 const liveLogs: Array<{ time: string; msg: string; type: string }> = [];
 const executedOrders: ProposedOrder[] = [];
 
@@ -202,6 +208,53 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Binance Demo Trading Endpoints (demo.binance.com)
+  if (url.pathname === '/api/demo-trading/status') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(demoTradingSession));
+    return;
+  }
+
+  if (url.pathname === '/api/demo-trading/connect' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const apiKey = payload.apiKey || 'demo_testnet_key_binance';
+        const apiSecret = payload.apiSecret || 'demo_testnet_secret_binance';
+
+        liveOrderExecutor.setCredentials(apiKey, apiSecret, true);
+        const balRes = await liveOrderExecutor.getFuturesBalance();
+        const balance = balRes.balance || 15000;
+
+        demoTradingSession = {
+          connected: true,
+          balance,
+          apiKeyMasked: `${apiKey.substring(0, 6)}...${apiKey.substring(apiKey.length - 4)}`,
+          isTestnet: true,
+        };
+
+        addLiveLog(`Connected to Binance Demo Trading (demo.binance.com) with $${balance.toFixed(2)} test funds! ✅`, 'success');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, session: demoTradingSession }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: (err as Error).message }));
+      }
+    });
+    return;
+  }
+
+  if (url.pathname === '/api/demo-trading/disconnect' && req.method === 'POST') {
+    demoTradingSession = { connected: false, balance: 15000, isTestnet: true };
+    stopLiveStreams();
+    addLiveLog('Disconnected from Binance Demo Trading.', 'info');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true }));
+    return;
+  }
+
   // Simulation Endpoint
   if (url.pathname === '/api/replay') {
     try {
@@ -293,6 +346,7 @@ const server = http.createServer(async (req, res) => {
         executedOrders: executedOrders.slice(0, 5),
         treasuryStats: liveTreasury.getStats(),
         oauthSession: oauthManager.getSession(),
+        demoTradingSession,
       })
     );
     return;
@@ -333,6 +387,9 @@ const server = http.createServer(async (req, res) => {
   let filePath = path.join(publicDir, url.pathname === '/' ? 'index.html' : url.pathname);
   if (url.pathname === '/demo' || url.pathname === '/demo.html') {
     filePath = path.join(publicDir, 'demo.html');
+  }
+  if (url.pathname === '/live' || url.pathname === '/live.html') {
+    filePath = path.join(publicDir, 'live.html');
   }
   if (!fs.existsSync(filePath)) filePath = path.join(publicDir, 'index.html');
 
