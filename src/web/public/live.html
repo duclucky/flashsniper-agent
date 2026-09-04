@@ -359,13 +359,13 @@
           <option value="BNBUSDT">BNB / USDT Futures</option>
           <option value="DOGEUSDT">DOGE / USDT Futures</option>
         </select>
-        <div id="liveStreamStatus" style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--green);">
+        <div id="liveStreamStatus" style="display: none; align-items: center; gap: 6px; font-size: 11px; color: var(--green);">
           <span class="pulse-dot" style="background: var(--green); box-shadow: 0 0 8px var(--green);"></span> STREAMING LIVE BINANCE DEPTH
         </div>
       </div>
 
       <div class="control-group">
-        <button id="actionBtn" class="btn btn-green">▶️ Start Live Sniper Agent</button>
+        <button id="actionBtn" class="btn btn-yellow" disabled>🔒 Connect Account to Start</button>
         <button id="haltBtn" class="btn btn-red" style="display: none;">🚨 EMERGENCY HALT</button>
       </div>
     </div>
@@ -378,20 +378,20 @@
       </div>
       <div class="card">
         <div class="card-label">Live Price</div>
-        <div class="card-value" id="priceVal">$103.40</div>
+        <div class="card-value" id="priceVal">--</div>
       </div>
       <div class="card">
-        <div class="card-label" id="capitalLabel">Demo Account Capital</div>
-        <div class="card-value" id="balanceVal" style="color: #fff;">$15,000.00</div>
+        <div class="card-label" id="capitalLabel">Account Capital</div>
+        <div class="card-value" id="balanceVal" style="color: #fff;">--</div>
       </div>
       <div class="card">
         <div class="card-label">Rolling Liquidation (10s)</div>
-        <div class="card-value" id="liqVal" style="color: var(--red);">$0k</div>
+        <div class="card-value" id="liqVal" style="color: var(--red);">--</div>
       </div>
       <div class="card">
         <div class="card-label">Agent State</div>
         <div style="margin-top: 3px;">
-          <span class="state-badge state-STANDBY" id="stateBadge">STANDBY</span>
+          <span class="state-badge state-STANDBY" id="stateBadge">OFFLINE</span>
         </div>
       </div>
     </div>
@@ -468,7 +468,6 @@
     const demoApiKey = document.getElementById('demoApiKey');
     const demoSecretKey = document.getElementById('demoSecretKey');
     const connectDemoBtn = document.getElementById('connectDemoBtn');
-    const quickFillDemoBtn = document.getElementById('quickFillDemoBtn');
     const disconnectDemoBtn = document.getElementById('disconnectDemoBtn');
     const demoInputRow = document.getElementById('demoInputRow');
     const demoConnectedRow = document.getElementById('demoConnectedRow');
@@ -482,6 +481,7 @@
     const pairSelect = document.getElementById('pairSelect');
     const actionBtn = document.getElementById('actionBtn');
     const haltBtn = document.getElementById('haltBtn');
+    const liveStreamStatus = document.getElementById('liveStreamStatus');
     const terminal = document.getElementById('terminal');
     const symbolVal = document.getElementById('symbolVal');
     const priceVal = document.getElementById('priceVal');
@@ -501,6 +501,36 @@
     const candleCanvas = document.getElementById('candleCanvas');
     const candleCtx = candleCanvas.getContext('2d');
 
+    let isDemoConnected = false;
+    let isOAuthConnected = false;
+    let isLiveActive = false;
+    let demoBalance = 15000;
+    let oauthBalance = 10000;
+
+    function updateActionBtnState() {
+      const isConnected = (activeEnv === 'demo' ? isDemoConnected : isOAuthConnected);
+      if (!isConnected) {
+        actionBtn.disabled = true;
+        actionBtn.innerText = activeEnv === 'demo' ? '🔒 Connect Demo Account to Start' : '🔒 Connect Binance Agent to Start';
+        actionBtn.className = 'btn btn-yellow';
+        balanceVal.innerText = '--';
+        priceVal.innerText = '--';
+        liqVal.innerText = '--';
+        stateBadge.className = 'state-badge state-STANDBY';
+        stateBadge.innerText = 'OFFLINE';
+        liveStreamStatus.style.display = 'none';
+        haltBtn.style.display = 'none';
+      } else {
+        actionBtn.disabled = false;
+        actionBtn.innerText = isLiveActive ? '⏸️ Stop Live Sniper Agent' : '▶️ Start Live Sniper Agent';
+        actionBtn.className = isLiveActive ? 'btn btn-red' : 'btn btn-green';
+        balanceVal.innerText = activeEnv === 'demo' ? '$' + demoBalance.toFixed(2) : '$' + oauthBalance.toFixed(2);
+        stateBadge.innerText = isLiveActive ? 'ARMED' : 'STANDBY';
+        liveStreamStatus.style.display = isLiveActive ? 'flex' : 'none';
+        haltBtn.style.display = isLiveActive ? 'inline-flex' : 'none';
+      }
+    }
+
     function logLine(time, msg, cls = '') {
       const div = document.createElement('div');
       div.className = 'terminal-line ' + cls;
@@ -519,7 +549,7 @@
       demoConnBox.style.display = 'block';
       oauthConnBox.style.display = 'none';
       capitalLabel.innerText = 'Demo Account Capital';
-      balanceVal.innerText = '$15,000.00';
+      updateActionBtnState();
     });
 
     envOAuthTab.addEventListener('click', () => {
@@ -531,7 +561,7 @@
       demoConnBox.style.display = 'none';
       oauthConnBox.style.display = 'block';
       capitalLabel.innerText = 'Sub-Account Capital';
-      balanceVal.innerText = '$10,000.00';
+      updateActionBtnState();
     });
 
     // Guide Modal
@@ -560,12 +590,13 @@
       });
       const data = await res.json();
       if (data.success) {
+        isDemoConnected = true;
+        demoBalance = data.session.balance || 15000;
         demoInputRow.style.display = 'none';
         demoConnectedRow.style.display = 'flex';
-        demoStatusTitle.innerText = `Binance Demo Trading: Connected (Balance: $${data.session.balance.toFixed(2)} USDT)`;
-        balanceVal.innerText = `$${data.session.balance.toFixed(2)}`;
-        logLine(new Date().toISOString().substring(11, 19), `Connected to demo.binance.com with $${data.session.balance.toFixed(2)} test funds!`, 'log-armed');
-        startLiveMonitoring();
+        demoStatusTitle.innerText = `Binance Demo Trading: Connected (Balance: $${demoBalance.toFixed(2)} USDT)`;
+        updateActionBtnState();
+        logLine(new Date().toISOString().substring(11, 19), `Connected to demo.binance.com with $${demoBalance.toFixed(2)} test funds!`, 'log-armed');
       } else {
         alert('Connection failed: ' + (data.error || 'Please verify your Demo API Key and Secret Key.'));
       }
@@ -573,10 +604,12 @@
 
     disconnectDemoBtn.addEventListener('click', async () => {
       await fetch('/api/demo-trading/disconnect', { method: 'POST' });
+      isDemoConnected = false;
       demoInputRow.style.display = 'flex';
       demoConnectedRow.style.display = 'none';
       demoStatusTitle.innerText = 'Binance Futures Demo Trading (Risk-Free $15,000 USDT)';
       stopLiveMonitoring();
+      updateActionBtnState();
       logLine(new Date().toISOString().substring(11, 19), 'Disconnected from Binance Demo Trading.', '');
     });
 
@@ -591,14 +624,25 @@
 
     disconnectOAuthBtn.addEventListener('click', async () => {
       await fetch('/api/oauth/disconnect', { method: 'POST' });
+      isOAuthConnected = false;
       oauthStatusTitle.innerText = 'Binance Agent OS Account: Not Connected';
       oauthConnectBtn.style.display = 'inline-flex';
       disconnectOAuthBtn.style.display = 'none';
       stopLiveMonitoring();
+      updateActionBtnState();
     });
 
     // Live Streaming Controls
     actionBtn.addEventListener('click', () => {
+      const isConnected = (activeEnv === 'demo' ? isDemoConnected : isOAuthConnected);
+      if (!isConnected) {
+        alert(activeEnv === 'demo'
+          ? 'Please enter your Binance Demo API Key & Secret Key and click "Connect Demo Account" first!'
+          : 'Please click "Connect Binance Agent (OAuth)" to authorize your session first!'
+        );
+        return;
+      }
+
       if (actionBtn.innerText.includes('Start')) {
         startLiveMonitoring();
       } else {
@@ -720,6 +764,9 @@
       symbolVal.innerText = pairSelect.value;
       if (livePollInterval) startLiveMonitoring();
     });
+
+    // Initialize in locked state
+    updateActionBtnState();
   </script>
 </body>
 </html>
