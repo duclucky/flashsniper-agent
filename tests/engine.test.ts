@@ -451,6 +451,27 @@ describe('X402Client (EIP-712 Micro-Payments on BSC)', () => {
   });
 });
 
+import { QuantBacktestEngine } from '../src/backtest/backtest_engine.js';
+
+describe('QuantBacktestEngine (50 Historical Flash Crashes)', () => {
+  const engine = new QuantBacktestEngine();
+
+  it('should process 50 historical liquidation events and filter black swans', () => {
+    const { trades, metrics } = engine.run();
+
+    expect(metrics.totalEventsProcessed).toBe(50);
+    expect(metrics.totalTradesExecuted).toBe(48);
+    expect(metrics.fallingKnivesAvoided).toBe(2);
+    expect(metrics.winRatePercent).toBe(79.17);
+    expect(metrics.winningTrades).toBe(38);
+    expect(metrics.losingTrades).toBe(10);
+    expect(metrics.netProfitUsd).toBeGreaterThan(100);
+    expect(metrics.profitFactor).toBeGreaterThan(2.0);
+    expect(trades.length).toBe(50);
+  });
+});
+
+
 
 
 

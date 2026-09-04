@@ -11,7 +11,8 @@
     "start": "tsx src/agent.ts",
     "demo": "tsx src/agent.ts --demo",
     "web": "tsx src/web/server.ts",
-    "verify:agent-os": "tsx scripts/verify_agent_os.ts"
+    "verify:agent-os": "tsx scripts/verify_agent_os.ts",
+    "backtest": "tsx src/backtest/run_backtest.ts"
   },
   "keywords": [
     "binance",
