@@ -181,18 +181,35 @@ flashsniper-agent/
 ├── package.json
 └── README.md
 ```
-│   │   └── replay.ts            # Deterministic simulation engine
-│   ├── web/
-│   │   ├── server.ts            # Native HTTP dashboard server (port 4173)
-│   │   └── public/index.html    # Interactive visual dashboard UI
-│   └── agent.ts                 # CLI runner & Live stream orchestrator
-├── tests/engine.test.ts         # 14 automated unit tests
-├── package.json
-└── README.md
-```
+
+---
+
+## 📖 Operational Guide for Traders & Judges
+
+### Option 1: Zero-Risk Binance Demo Trading ($15,000 USDT Testnet Funds)
+1. Go to [demo.binance.com/en/my/settings/api-management](https://demo.binance.com/en/my/settings/api-management) and create free testnet API keys.
+2. Configure `.env`:
+   ```ini
+   BINANCE_API_ENV=testnet
+   BINANCE_API_KEY=your_demo_key
+   BINANCE_SECRET_KEY=your_demo_secret
+   DRY_RUN=false
+   ```
+3. Run `npm run web` (or `npm start -- --live`) to execute live testnet orders on `https://testnet.binancefuture.com`!
+
+### Option 2: Live Production via Binance Agent OS (Sub-Account)
+1. In Binance Agent OS portal, authorize an Agentic Sub-account session with `market_data` and `trade` scopes (Zero-Withdrawal).
+2. Configure `.env`:
+   ```ini
+   BINANCE_MCP_TOKEN=your_oauth_session_token
+   MOCK_MODE=0
+   DRY_RUN=false
+   ```
+3. Run `npm run web` and connect your Agent to trade live on Mainnet with strict 2% capital risk caps!
 
 ---
 
 ## 📜 License
 
 MIT License. Built for the **Binance Agent OS Mini Hackathon (Track A)**.
+Author: `duclucky` (trungduccant999@gmail.com)
