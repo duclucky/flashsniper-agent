@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "binance-agentic": {
+      "url": "https://agent.binance.com/mcp/agentic",
+      "transport": "http-sse",
+      "scopes": [
+        "market_data:read",
+        "account:read",
+        "trade:spot_futures"
+      ],
+      "description": "Official Binance Agent OS MCP Server scoped to Agentic Sub-account (No withdrawal permission)"
+    }
+  }
+}

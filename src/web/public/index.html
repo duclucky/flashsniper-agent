@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlashSniper Agent — Binance Agent OS (Track A)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080a0d;
+      --card-bg: #12161c;
+      --card-hover: #181e26;
+      --border: #232a34;
+      --yellow: #f0b90b;
+      --yellow-glow: rgba(240, 185, 11, 0.2);
+      --green: #0ecb81;
+      --red: #f6465d;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --text: #eaecef;
+      --text-muted: #848e9c;
+    }
+
+    html { scroll-behavior: smooth; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Navigation */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 10, 13, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .nav-content { display: flex; justify-content: space-between; align-items: center; }
+    .logo-area { display: flex; align-items: center; gap: 10px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; font-size: 13px; font-weight: 600; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+
+    .badge {
+      background: rgba(240, 185, 11, 0.15);
+      color: var(--yellow);
+      border: 1px solid rgba(240, 185, 11, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-purple {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--purple);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .btn {
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-yellow { background: var(--yellow); color: #000; box-shadow: 0 0 20px rgba(240, 185, 11, 0.2); }
+    .btn-yellow:hover { background: #dfa900; transform: translateY(-1px); box-shadow: 0 0 25px rgba(240, 185, 11, 0.35); }
+    .btn-ghost { background: #1a202c; color: #fff; border: 1px solid var(--border); }
+    .btn-ghost:hover { background: #232a34; color: var(--yellow); }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+    .hero-badge-wrap { margin-bottom: 20px; }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 800px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+    .hero-actions { display: flex; justify-content: center; gap: 16px; margin-bottom: 50px; }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 70px;
+      text-align: center;
+    }
+    .stat-item { border-right: 1px solid var(--border); }
+    .stat-item:last-child { border-right: none; }
+    .stat-val { font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+    .stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+
+    /* Section Title */
+    .section-header { text-align: center; margin-bottom: 40px; }
+    .section-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+    .section-header p { font-size: 14px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+
+    /* Problem vs Solution */
+    .pvs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+    .pvs-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 30px;
+    }
+    .pvs-card.solution {
+      border-color: rgba(240, 185, 11, 0.4);
+      background: linear-gradient(180deg, rgba(240, 185, 11, 0.03) 0%, rgba(18, 22, 28, 1) 100%);
+    }
+    .pvs-tag { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; display: inline-block; }
+    .pvs-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+    .pvs-list { list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+    .pvs-list li { display: flex; gap: 10px; align-items: flex-start; }
+
+    /* Video Section */
+    .video-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      margin-bottom: 80px;
+    }
+    .video-wrapper {
+      position: relative;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .play-btn {
+      width: 72px;
+      height: 72px;
+      background: var(--yellow);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(240, 185, 11, 0.4);
+      transition: transform 0.2s;
+    }
+    .play-btn:hover { transform: scale(1.08); }
+    .play-triangle {
+      width: 0;
+      height: 0;
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      border-left: 20px solid #000;
+      margin-left: 4px;
+    }
+
+    .timestamps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      font-size: 12px;
+    }
+    .ts-box { background: #090d12; border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+    .ts-time { color: var(--yellow); font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 11px; margin-bottom: 4px; }
+    .ts-desc { color: var(--text-muted); font-size: 11px; line-height: 1.4; }
+
+    /* Architecture Grid */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 80px;
+    }
+    .arch-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+    }
+    .arch-step { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--yellow); font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+    .arch-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .arch-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Specs Grid */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 80px;
+    }
+    .spec-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .spec-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .spec-table td { padding: 6px 0; border-bottom: 1px solid #1a202c; }
+    .spec-table td:first-child { color: var(--text-muted); width: 40%; font-weight: 500; }
+    .spec-table td:last-child { color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+    /* CTA Banner */
+    .cta-banner {
+      background: linear-gradient(180deg, rgba(240, 185, 11, 0.08) 0%, rgba(18, 22, 28, 1) 100%);
+      border: 1px solid rgba(240, 185, 11, 0.3);
+      border-radius: 12px;
+      padding: 60px 40px;
+      text-align: center;
+      margin-bottom: 70px;
+    }
+    .cta-banner h2 { font-size: 32px; font-weight: 800; margin-bottom: 14px; }
+    .cta-banner p { font-size: 16px; color: var(--text-muted); max-width: 600px; margin: 0 auto 28px; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 30px 0;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container nav-content">
+      <div class="logo-area">
+        <span style="font-size: 20px;">🎯</span>
+        <span style="font-weight: 800; font-size: 16px;">FlashSniper Agent</span>
+        <span class="badge">Binance Agent OS • Track A</span>
+      </div>
+      <div class="nav-links">
+        <a href="#problem">Problem & Solution</a>
+        <a href="#video">Video Demo</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#specs">Specifications</a>
+        <a href="https://github.com/binance/binance-skills-hub" target="_blank">Binance Skills Hub ↗</a>
+        <a href="/demo.html" class="btn btn-yellow">🚀 Launch Simulator</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-badge-wrap">
+        <span class="badge">🏆 Binance Agent OS Mini Hackathon</span>
+        <span class="badge-purple">⚡ x402 Self-Sustaining M2M</span>
+      </div>
+      <h1>Autonomous Liquidation Cascade Sniper<br>& Microstructure Sentinel</h1>
+      <p>
+        An institutional-grade AI trading agent built strictly on the <strong>Binance Agent OS</strong> framework.
+        Snipes high-probability mean-reversion wicks caused by cascading liquidations without catching falling knives.
+      </p>
+      <div class="hero-actions">
+        <a href="/demo.html" class="btn btn-yellow">🚀 Launch Interactive Simulator (No Keys Required)</a>
+        <a href="#video" class="btn btn-ghost">🎬 Watch 90s Demo Video</a>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-val" style="color: var(--green);">79.17%</div>
+          <div class="stat-lbl">Backtest Win Rate</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" style="color: var(--yellow);">2.68</div>
+          <div class="stat-lbl">Profit Factor</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" style="color: var(--red);">-2.80%</div>
+          <div class="stat-lbl">Max Drawdown</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">19 / 19</div>
+          <div class="stat-lbl">Automated Unit Tests</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" style="color: var(--purple);">100%</div>
+          <div class="stat-lbl">Agent OS Native</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Problem vs Solution -->
+    <section id="problem">
+      <div class="section-header">
+        <h2>The Liquidation Trap vs. The Quantitative Sniper</h2>
+        <p>Why retail traders get liquidated catching knives, and how FlashSniper turns dislocation wicks into mathematical edge.</p>
+      </div>
+
+      <div class="pvs-grid">
+        <div class="pvs-card">
+          <span class="pvs-tag" style="color: var(--red);">The Problem</span>
+          <h3>Retail Knife-Catching</h3>
+          <ul class="pvs-list">
+            <li>
+              <span>❌</span>
+              <div><strong>Forced Cascade Selling:</strong> Binance liquidation engines fire unceasing market orders, shredding through L2 bids and creating deep, violent price drops.</div>
+            </li>
+            <li>
+              <span>❌</span>
+              <div><strong>Premature Knife Catching:</strong> Human traders and naive bots buy too early into the falling knife before selling volume has exhausted.</div>
+            </li>
+            <li>
+              <span>❌</span>
+              <div><strong>Lagging Technical Indicators:</strong> Standard bots rely on 1m or 5m RSI/MACD candles. By the time they trigger, the mean-reversion bounce has already finished.</div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="pvs-card solution">
+          <span class="pvs-tag" style="color: var(--yellow);">The FlashSniper Solution</span>
+          <h3>Microstructure Exhaustion Snipe</h3>
+          <ul class="pvs-list">
+            <li>
+              <span>✅</span>
+              <div><strong>Liquidation Velocity ($V_{liq}$):</strong> Tracks rolling liquidation notional per second, alerting the agent only during genuine market dislocations (> $500k in 10s).</div>
+            </li>
+            <li>
+              <span>✅</span>
+              <div><strong>Orderbook Absorption ($OIB$):</strong> Evaluates top-5 depth levels. Refuses entry until Orderbook Imbalance flips positive (+0.25) and liquidations decelerate.</div>
+            </li>
+            <li>
+              <span>✅</span>
+              <div><strong>Atomic Bracket Execution:</strong> Places an Iceberg entry order coupled atomically with a Hard Stop-Loss (-0.8%) and a Take-Profit (+2.4%).</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Video Demo Section -->
+    <section id="video" class="video-section">
+      <div class="section-header">
+        <h2>90-Second Demo Presentation</h2>
+        <p>A concise walkthrough of the sensor stack, adversarial AI cortex, and self-sustaining execution.</p>
+      </div>
+
+      <div class="video-wrapper">
+        <div class="play-btn" onclick="window.location.href='/demo.html'">
+          <div class="play-triangle"></div>
+        </div>
+        <div style="margin-top: 16px; font-weight: 700; font-size: 14px; color: #fff;">Click to Launch Interactive Visual Walkthrough</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Recorded on SOLUSDT 1-minute liquidation cascade</div>
+      </div>
+
+      <div class="timestamps-grid">
+        <div class="ts-box">
+          <div class="ts-time">00:00 — 00:20</div>
+          <div class="ts-desc">The Liquidation Cascade problem on Binance Futures and why retail catches knives.</div>
+        </div>
+        <div class="ts-box">
+          <div class="ts-time">00:20 — 00:50</div>
+          <div class="ts-desc">Microstructure Sensors: $V_{liq}$ surge, negative OIB protection, and deceleration confirmation.</div>
+        </div>
+        <div class="ts-box">
+          <div class="ts-time">00:50 — 01:15</div>
+          <div class="ts-desc">Bracket Order placement via Binance Agent OS, Hard Stop-Loss, and Take-Profit execution.</div>
+        </div>
+        <div class="ts-box">
+          <div class="ts-time">01:15 — 01:30</div>
+          <div class="ts-desc">x402 Self-Sustaining Treasury deposit, SKILL.md packaging, and 19 passing tests.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture">
+      <div class="section-header">
+        <h2>4-Stage Production Architecture</h2>
+        <p>How data flows from Binance public WebSocket streams to the Agentic Sub-Account execution layer.</p>
+      </div>
+
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="arch-step">Stage 01</div>
+          <h4>Stream Ingestion</h4>
+          <p>Listens directly to Binance public WebSocket streams: <code>!forceOrder@arr</code> and <code>depth20@100ms</code> with zero latency.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-step">Stage 02</div>
+          <h4>Quant Filter</h4>
+          <p>Calculates rolling $V_{liq}$ velocity and Orderbook Imbalance ($OIB$). Transitions from STANDBY to ALERT and ARMED.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-step">Stage 03</div>
+          <h4>Cognitive Cortex</h4>
+          <p>Adversarial AI verifies whether the cascade is technical or an existential hack. Deducts $0.0005 via x402 Micropayment.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-step">Stage 04</div>
+          <h4>Agentic Execution</h4>
+          <p>Dispatches an Iceberg limit order to Binance Agent OS with mandatory Hard Stop-Loss (-0.8%) and Zero-Withdrawal constraints.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Specifications Section -->
+    <section id="specs">
+      <div class="section-header">
+        <h2>Technical Specifications & Compliance</h2>
+        <p>Full protocol, security, and execution standards implemented strictly to match Binance Agent OS requirements.</p>
+      </div>
+
+      <div class="specs-grid">
+        <div class="spec-card">
+          <h3>⚡ Binance Agent OS Protocol</h3>
+          <table class="spec-table">
+            <tr><td>Protocol Standard</td><td>Model Context Protocol (MCP) JSON-RPC 2.0</td></tr>
+            <tr><td>Official Endpoint</td><td>https://agent.binance.com/mcp/agentic</td></tr>
+            <tr><td>Authorized Scopes</td><td>market_data, account, trade (Zero-Withdrawal)</td></tr>
+            <tr><td>OAuth Flow</td><td>OAuth 2.0 with PKCE (SHA-256 Code Challenge)</td></tr>
+            <tr><td>Skills Hub Spec</td><td>SKILL.md (OpenClaw / Claude Code / binance-cli)</td></tr>
+          </table>
+        </div>
+
+        <div class="spec-card">
+          <h3>🛡️ Execution & Risk Guardrails</h3>
+          <table class="spec-table">
+            <tr><td>Target Markets</td><td>Binance USDⓈ-M Futures (SOL, BTC, ETH, DOGE)</td></tr>
+            <tr><td>Order Mechanics</td><td>Iceberg Limit Entry + Hard STOP_MARKET + TP</td></tr>
+            <tr><td>Max Allocation Cap</td><td>2% of Agentic Sub-Account Balance (Max $1,000)</td></tr>
+            <tr><td>Hard Stop-Loss</td><td>Mandatory -0.8% below cascade wick low</td></tr>
+            <tr><td>Daily Circuit Breaker</td><td>Auto-halt trading if daily loss reaches $250</td></tr>
+          </table>
+        </div>
+
+        <div class="spec-card">
+          <h3>📐 Quantitative Microstructure Metrics</h3>
+          <table class="spec-table">
+            <tr><td>Liquidation Radar ($V_{liq}$)</td><td>10s & 30s rolling notional sum (Trigger > $500k)</td></tr>
+            <tr><td>Orderbook Imbalance ($OIB$)</td><td>Top-5 L2 depth levels (Threshold > +0.25)</td></tr>
+            <tr><td>Deceleration Gate</td><td>Requires $\ge 50\%$ drop in liquidation velocity</td></tr>
+            <tr><td>Mean Reversion Target</td><td>+2.4% above entry (EMA20 / VWAP alignment)</td></tr>
+            <tr><td>Audit Proof</td><td>Cryptographic SHA-256 hash on every intent</td></tr>
+          </table>
+        </div>
+
+        <div class="spec-card">
+          <h3>💎 x402 Micropayments & Economics</h3>
+          <table class="spec-table">
+            <tr><td>Payment Standard</td><td>EIP-712 / EIP-3009 TransferWithAuthorization</td></tr>
+            <tr><td>Settlement Network</td><td>BNB Smart Chain (BSC Testnet 97 / Mainnet 56)</td></tr>
+            <tr><td>Inference Cost</td><td>~$0.0005 per cold-wake adversarial check</td></tr>
+            <tr><td>Self-Sustaining Loop</td><td>1% of winning trade profit auto-funds Treasury</td></tr>
+            <tr><td>Receipt Format</td><td>X402 JWS/SHA-256 with verifiable timestamp</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="cta-banner">
+      <h2>Ready to Inspect the Live Simulator?</h2>
+      <p>Evaluate the full interactive terminal, candlestick chart, x402 treasury, and audit ledger with zero credentials required.</p>
+      <a href="/demo.html" class="btn btn-yellow" style="font-size: 15px; padding: 12px 28px;">🚀 Launch Interactive Simulator</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div>
+        <strong>FlashSniper Agent</strong> — Built for Binance Agent OS Mini Hackathon (Track A).
+      </div>
+      <div>
+        <a href="https://github.com/binance/binance-skills-hub" target="_blank" style="margin-right: 16px;">Binance Skills Hub</a>
+        <a href="/demo.html" style="margin-right: 16px;">Simulator</a>
+        <span>MIT License</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

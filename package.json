@@ -1,0 +1,38 @@
+{
+  "name": "flashsniper-agent",
+  "version": "1.0.0",
+  "description": "Autonomous Market-Microstructure & Liquidation Cascade Sniper for Binance Agent OS (Track A)",
+  "type": "module",
+  "main": "dist/agent.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "tsx src/agent.ts",
+    "demo": "tsx src/agent.ts --demo",
+    "web": "tsx src/web/server.ts",
+    "verify:agent-os": "tsx scripts/verify_agent_os.ts"
+  },
+  "keywords": [
+    "binance",
+    "agent-os",
+    "mcp",
+    "model-context-protocol",
+    "liquidation-cascade",
+    "microstructure",
+    "trading-agent"
+  ],
+  "author": "FlashSniper Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@types/ws": "^8.5.14",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  }
+}
